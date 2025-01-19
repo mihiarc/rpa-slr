@@ -1,0 +1,101 @@
+[
+  {
+    "stnId": "1820000",
+    "stnName": "Kwajalein, Marshall Islands",
+    "decade": 2020,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 60,
+    "intLow": 65,
+    "intermediate": 70,
+    "intHigh": 70,
+    "high": 70
+  },
+  {
+    "stnId": "1820000",
+    "stnName": "Kwajalein, Marshall Islands",
+    "decade": 2030,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 80,
+    "intLow": 90,
+    "intermediate": 95,
+    "intHigh": 100,
+    "high": 105
+  },
+  {
+    "stnId": "1820000",
+    "stnName": "Kwajalein, Marshall Islands",
+    "decade": 2040,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 100,
+    "intLow": 115,
+    "intermediate": 130,
+    "intHigh": 140,
+    "high": 155
+  },
+  {
+    "stnId": "1820000",
+    "stnName": "Kwajalein, Marshall Islands",
+    "decade": 2050,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 120,
+    "intLow": 145,
+    "intermediate": 170,
+    "intHigh": 195,
+    "high": 225
+  },
+  {
+    "stnId": "1820000",
+    "stnName": "Kwajalein, Marshall Islands",
+    "decade": 2060,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 140,
+    "intLow": 180,
+    "intermediate": 210,
+    "intHigh": 270,
+    "high": 320
+  },
+  {
+    "stnId": "1820000",
+    "stnName": "Kwajalein, Marshall Islands",
+    "decade": 2070,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 165,
+    "intLow": 210,
+    "intermediate": 265,
+    "intHigh": 345,
+    "high": 365
+  },
+  {
+    "stnId": "1820000",
+    "stnName": "Kwajalein, Marshall Islands",
+    "decade": 2080,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 185,
+    "intLow": 240,
+    "intermediate": 325,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "1820000",
+    "stnName": "Kwajalein, Marshall Islands",
+    "decade": 2090,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 200,
+    "intLow": 275,
+    "intermediate": 360,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "1820000",
+    "stnName": "Kwajalein, Marshall Islands",
+    "decade": 2100,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 215,
+    "intLow": 310,
+    "intermediate": 365,
+    "intHigh": 365,
+    "high": 365
+  }
+]

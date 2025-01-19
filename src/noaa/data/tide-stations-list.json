@@ -1,0 +1,2410 @@
+[
+    {
+        "state": "HI",
+        "timezone": "HAST",
+        "id": "1611400",
+        "name": "Nawiliwili",
+        "lat": 21.9544,
+        "lng": -159.3561
+    },
+    {
+        "state": "HI",
+        "timezone": "HAST",
+        "id": "1612340",
+        "name": "Honolulu",
+        "lat": 21.303333,
+        "lng": -157.864528
+    },
+    {
+        "state": "HI",
+        "timezone": "HAST",
+        "id": "1612401",
+        "name": "Pearl Harbor",
+        "lat": 21.3675,
+        "lng": -157.963898
+    },
+    {
+        "state": "HI",
+        "timezone": "HAST",
+        "id": "1612480",
+        "name": "Mokuoloe",
+        "lat": 21.433056,
+        "lng": -157.79
+    },
+    {
+        "state": "HI",
+        "timezone": "HAST",
+        "id": "1615680",
+        "name": "Kahului, Kahului Harbor",
+        "lat": 20.895,
+        "lng": -156.469167
+    },
+    {
+        "state": "HI",
+        "timezone": "HAST",
+        "id": "1617433",
+        "name": "Kawaihae",
+        "lat": 20.0366,
+        "lng": -155.8294
+    },
+    {
+        "state": "HI",
+        "timezone": "HAST",
+        "id": "1617760",
+        "name": "Hilo, Hilo Bay, Kuhio Bay",
+        "lat": 19.73028,
+        "lng": -155.06
+    },
+    {
+        "state": "United States of America",
+        "timezone": "SST",
+        "id": "1619910",
+        "name": "Sand Island, Midway Islands",
+        "lat": 28.211667,
+        "lng": -177.36
+    },
+    {
+        "state": "United States of America",
+        "timezone": "ChST",
+        "id": "1630000",
+        "name": "Apra Harbor, Guam",
+        "lat": 13.44339,
+        "lng": 144.656361
+    },
+    {
+        "state": "United States of America",
+        "timezone": "ChST",
+        "id": "1631428",
+        "name": "Pago Bay, Guam",
+        "lat": 13.428333,
+        "lng": 144.798889
+    },
+    {
+        "state": "American Samoa",
+        "timezone": "SST",
+        "id": "1770000",
+        "name": "Pago Pago, American Samoa",
+        "lat": -14.28,
+        "lng": -170.690002
+    },
+    {
+        "state": "United States of America",
+        "timezone": "NZST",
+        "id": "1820000",
+        "name": "Kwajalein, Marshall Islands",
+        "lat": 8.7317,
+        "lng": 167.736115
+    },
+    {
+        "state": "United States of America",
+        "timezone": "NZST",
+        "id": "1890000",
+        "name": "Wake Island, Pacific Ocean",
+        "lat": 19.290556,
+        "lng": 166.6175
+    },
+    {
+        "state": "Bermuda",
+        "timezone": "AST",
+        "id": "2695535",
+        "name": "Bermuda Biological Station",
+        "lat": 32.369999,
+        "lng": -64.695
+    },
+    {
+        "state": "Bermuda",
+        "timezone": "AST",
+        "id": "2695540",
+        "name": "Bermuda, St. Georges Island",
+        "lat": 32.373306,
+        "lng": -64.703306
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "8311030",
+        "name": "Ogdensburg",
+        "lat": 44.702778,
+        "lng": -75.494446
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "8311062",
+        "name": "Alexandria Bay",
+        "lat": 44.33111,
+        "lng": -75.934528
+    },
+    {
+        "state": "ME",
+        "timezone": "EST",
+        "id": "8410140",
+        "name": "Eastport",
+        "lat": 44.904598,
+        "lng": -66.982903
+    },
+    {
+        "state": "ME",
+        "timezone": "EST",
+        "id": "8411060",
+        "name": "Cutler Farris Wharf",
+        "lat": 44.6567,
+        "lng": -67.209999
+    },
+    {
+        "state": "ME",
+        "timezone": "EST",
+        "id": "8413320",
+        "name": "Bar Harbor",
+        "lat": 44.392194,
+        "lng": -68.204278
+    },
+    {
+        "state": "ME",
+        "timezone": "EST",
+        "id": "8418150",
+        "name": "Portland",
+        "lat": 43.65806,
+        "lng": -70.24417
+    },
+    {
+        "state": "ME",
+        "timezone": "EST",
+        "id": "8419870",
+        "name": "Seavey Island",
+        "lat": 43.07972,
+        "lng": -70.741
+    },
+    {
+        "state": "MA",
+        "timezone": "EST",
+        "id": "8443970",
+        "name": "Boston",
+        "lat": 42.3539,
+        "lng": -71.05028
+    },
+    {
+        "state": "MA",
+        "timezone": "EST",
+        "id": "8447386",
+        "name": "Fall River",
+        "lat": 41.7043,
+        "lng": -71.164101
+    },
+    {
+        "state": "MA",
+        "timezone": "EST",
+        "id": "8447435",
+        "name": "Chatham",
+        "lat": 41.688499,
+        "lng": -69.9511
+    },
+    {
+        "state": "MA",
+        "timezone": "EST",
+        "id": "8447636",
+        "name": "New Bedford Harbor",
+        "lat": 41.621111,
+        "lng": -70.913611
+    },
+    {
+        "state": "MA",
+        "timezone": "EST",
+        "id": "8447930",
+        "name": "Woods Hole",
+        "lat": 41.523613,
+        "lng": -70.671112
+    },
+    {
+        "state": "MA",
+        "timezone": "EST",
+        "id": "8449130",
+        "name": "Nantucket Island",
+        "lat": 41.285,
+        "lng": -70.096703
+    },
+    {
+        "state": "RI",
+        "timezone": "EST",
+        "id": "8452660",
+        "name": "Newport",
+        "lat": 41.504333,
+        "lng": -71.326139
+    },
+    {
+        "state": "RI",
+        "timezone": "EST",
+        "id": "8452944",
+        "name": "Conimicut Light",
+        "lat": 41.717111,
+        "lng": -71.345167
+    },
+    {
+        "state": "RI",
+        "timezone": "EST",
+        "id": "8454000",
+        "name": "Providence",
+        "lat": 41.807167,
+        "lng": -71.400667
+    },
+    {
+        "state": "RI",
+        "timezone": "EST",
+        "id": "8454049",
+        "name": "Quonset Point",
+        "lat": 41.58694,
+        "lng": -71.41
+    },
+    {
+        "state": "CT",
+        "timezone": "EST",
+        "id": "8461490",
+        "name": "New London",
+        "lat": 41.371667,
+        "lng": -72.095556
+    },
+    {
+        "state": "CT",
+        "timezone": "EST",
+        "id": "8465705",
+        "name": "New Haven",
+        "lat": 41.283333,
+        "lng": -72.908333
+    },
+    {
+        "state": "CT",
+        "timezone": "EST",
+        "id": "8467150",
+        "name": "Bridgeport",
+        "lat": 41.175819,
+        "lng": -73.183969
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "8510560",
+        "name": "Montauk",
+        "lat": 41.048333,
+        "lng": -71.959444
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "8516945",
+        "name": "Kings Point",
+        "lat": 40.810299,
+        "lng": -73.7649
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "8518750",
+        "name": "The Battery",
+        "lat": 40.700556,
+        "lng": -74.014167
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "8518962",
+        "name": "Turkey Point Hudson River NERRS",
+        "lat": 42.014167,
+        "lng": -73.939167
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "8519483",
+        "name": "Bergen Point West Reach",
+        "lat": 40.6391,
+        "lng": -74.146306
+    },
+    {
+        "state": "NJ",
+        "timezone": "EST",
+        "id": "8531680",
+        "name": "Sandy Hook",
+        "lat": 40.4669,
+        "lng": -74.009399
+    },
+    {
+        "state": "NJ",
+        "timezone": "EST",
+        "id": "8534720",
+        "name": "Atlantic City",
+        "lat": 39.356667,
+        "lng": -74.418053
+    },
+    {
+        "state": "NJ",
+        "timezone": "EST",
+        "id": "8536110",
+        "name": "Cape May",
+        "lat": 38.9683,
+        "lng": -74.959999
+    },
+    {
+        "state": "NJ",
+        "timezone": "EST",
+        "id": "8537121",
+        "name": "Ship John Shoal",
+        "lat": 39.305389,
+        "lng": -75.376678
+    },
+    {
+        "state": "NJ",
+        "timezone": "EST",
+        "id": "8539094",
+        "name": "Burlington, Delaware River",
+        "lat": 40.081699,
+        "lng": -74.869698
+    },
+    {
+        "state": "PA",
+        "timezone": "EST",
+        "id": "8540433",
+        "name": "Marcus Hook",
+        "lat": 39.811806,
+        "lng": -75.4095
+    },
+    {
+        "state": "PA",
+        "timezone": "EST",
+        "id": "8545240",
+        "name": "Philadelphia",
+        "lat": 39.933056,
+        "lng": -75.141981
+    },
+    {
+        "state": "PA",
+        "timezone": "EST",
+        "id": "8546252",
+        "name": "Bridesburg",
+        "lat": 39.979683,
+        "lng": -75.079317
+    },
+    {
+        "state": "PA",
+        "timezone": "EST",
+        "id": "8548989",
+        "name": "Newbold",
+        "lat": 40.137333,
+        "lng": -74.751833
+    },
+    {
+        "state": "DE",
+        "timezone": "EST",
+        "id": "8551762",
+        "name": "Delaware City",
+        "lat": 39.582194,
+        "lng": -75.588972
+    },
+    {
+        "state": "DE",
+        "timezone": "EST",
+        "id": "8551910",
+        "name": "Reedy Point",
+        "lat": 39.558333,
+        "lng": -75.571944
+    },
+    {
+        "state": "DE",
+        "timezone": "EST",
+        "id": "8555889",
+        "name": "Brandywine Shoal Light",
+        "lat": 38.987,
+        "lng": -75.113
+    },
+    {
+        "state": "DE",
+        "timezone": "EST",
+        "id": "8557380",
+        "name": "Lewes",
+        "lat": 38.782833,
+        "lng": -75.119278
+    },
+    {
+        "state": "MD",
+        "timezone": "EST",
+        "id": "8570283",
+        "name": "Ocean City Inlet",
+        "lat": 38.328267,
+        "lng": -75.091086
+    },
+    {
+        "state": "MD",
+        "timezone": "EST",
+        "id": "8571421",
+        "name": "Bishops Head",
+        "lat": 38.22,
+        "lng": -76.038333
+    },
+    {
+        "state": "MD",
+        "timezone": "EST",
+        "id": "8571892",
+        "name": "Cambridge",
+        "lat": 38.5725,
+        "lng": -76.061667
+    },
+    {
+        "state": "MD",
+        "timezone": "EST",
+        "id": "8573364",
+        "name": "Tolchester Beach",
+        "lat": 39.213444,
+        "lng": -76.244556
+    },
+    {
+        "state": "MD",
+        "timezone": "EST",
+        "id": "8573927",
+        "name": "Chesapeake City",
+        "lat": 39.526667,
+        "lng": -75.81
+    },
+    {
+        "state": "MD",
+        "timezone": "EST",
+        "id": "8574680",
+        "name": "Baltimore",
+        "lat": 39.27,
+        "lng": -76.5783
+    },
+    {
+        "state": "MD",
+        "timezone": "EST",
+        "id": "8575512",
+        "name": "Annapolis",
+        "lat": 38.9833,
+        "lng": -76.4816
+    },
+    {
+        "state": "MD",
+        "timezone": "EST",
+        "id": "8577330",
+        "name": "Solomons Island",
+        "lat": 38.3167,
+        "lng": -76.451698
+    },
+    {
+        "state": "DC",
+        "timezone": "EST",
+        "id": "8594900",
+        "name": "Washington",
+        "lat": 38.873,
+        "lng": -77.0217
+    },
+    {
+        "state": "VA",
+        "timezone": "EST",
+        "id": "8631044",
+        "name": "Wachapreague",
+        "lat": 37.607778,
+        "lng": -75.685833
+    },
+    {
+        "state": "VA",
+        "timezone": "EST",
+        "id": "8632200",
+        "name": "Kiptopeke",
+        "lat": 37.165278,
+        "lng": -75.988333
+    },
+    {
+        "state": "VA",
+        "timezone": "EST",
+        "id": "8635027",
+        "name": "Dahlgren",
+        "lat": 38.319753,
+        "lng": -77.036597
+    },
+    {
+        "state": "VA",
+        "timezone": "EST",
+        "id": "8635750",
+        "name": "Lewisetta",
+        "lat": 37.996389,
+        "lng": -76.465556
+    },
+    {
+        "state": "VA",
+        "timezone": "EST",
+        "id": "8636580",
+        "name": "Windmill Point",
+        "lat": 37.6155,
+        "lng": -76.289778
+    },
+    {
+        "state": "VA",
+        "timezone": "EST",
+        "id": "8637689",
+        "name": "Yorktown USCG Training Center",
+        "lat": 37.2265,
+        "lng": -76.478806
+    },
+    {
+        "state": "VA",
+        "timezone": "EST",
+        "id": "8638610",
+        "name": "Sewells Point",
+        "lat": 36.942778,
+        "lng": -76.328611
+    },
+    {
+        "state": "VA",
+        "timezone": "EST",
+        "id": "8638901",
+        "name": "CBBT, Chesapeake Channel",
+        "lat": 37.032902,
+        "lng": -76.083298
+    },
+    {
+        "state": "VA",
+        "timezone": "EST",
+        "id": "8639348",
+        "name": "Money Point",
+        "lat": 36.778194,
+        "lng": -76.301861
+    },
+    {
+        "state": "NC",
+        "timezone": "EST",
+        "id": "8651370",
+        "name": "Duck",
+        "lat": 36.1833,
+        "lng": -75.746696
+    },
+    {
+        "state": "NC",
+        "timezone": "EST",
+        "id": "8652587",
+        "name": "Oregon Inlet Marina",
+        "lat": 35.795694,
+        "lng": -75.548194
+    },
+    {
+        "state": "NC",
+        "timezone": "EST",
+        "id": "8654467",
+        "name": "USCG Station Hatteras",
+        "lat": 35.208611,
+        "lng": -75.704194
+    },
+    {
+        "state": "NC",
+        "timezone": "EST",
+        "id": "8656483",
+        "name": "Beaufort, Duke Marine Lab",
+        "lat": 34.7175,
+        "lng": -76.671111
+    },
+    {
+        "state": "NC",
+        "timezone": "EST",
+        "id": "8658120",
+        "name": "Wilmington",
+        "lat": 34.2275,
+        "lng": -77.953611
+    },
+    {
+        "state": "NC",
+        "timezone": "EST",
+        "id": "8658163",
+        "name": "Wrightsville Beach",
+        "lat": 34.213333,
+        "lng": -77.786667
+    },
+    {
+        "state": "SC",
+        "timezone": "EST",
+        "id": "8661070",
+        "name": "Springmaid Pier",
+        "lat": 33.654999,
+        "lng": -78.918297
+    },
+    {
+        "state": "SC",
+        "timezone": "EST",
+        "id": "8665530",
+        "name": "Charleston",
+        "lat": 32.775,
+        "lng": -79.923889
+    },
+    {
+        "state": "GA",
+        "timezone": "EST",
+        "id": "8670870",
+        "name": "Fort Pulaski",
+        "lat": 32.034694,
+        "lng": -80.903028
+    },
+    {
+        "state": "GA",
+        "timezone": "EST",
+        "id": "8679598",
+        "name": "Kings Bay MSF Pier",
+        "lat": 30.778099,
+        "lng": -81.491402
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8720030",
+        "name": "Fernandina Beach",
+        "lat": 30.671356,
+        "lng": -81.465842
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8720218",
+        "name": "Mayport (Bar Pilots Dock)",
+        "lat": 30.398167,
+        "lng": -81.427889
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8720219",
+        "name": "Dames Point",
+        "lat": 30.387222,
+        "lng": -81.559166
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8720226",
+        "name": "Southbank Riverwalk, St Johns River",
+        "lat": 30.320499,
+        "lng": -81.659058
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8720357",
+        "name": "I-295 Buckman Bridge",
+        "lat": 30.192417,
+        "lng": -81.69
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8721604",
+        "name": "Trident Pier, Port Canaveral",
+        "lat": 28.415833,
+        "lng": -80.593056
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8722670",
+        "name": "Lake Worth Pier, Atlantic Ocean",
+        "lat": 26.612778,
+        "lng": -80.034167
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8722956",
+        "name": "South Port Everglades",
+        "lat": 26.081667,
+        "lng": -80.116667
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8723214",
+        "name": "Virginia Key",
+        "lat": 25.731667,
+        "lng": -80.161667
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8723970",
+        "name": "Vaca Key, Florida Bay",
+        "lat": 24.711,
+        "lng": -81.1065
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8724580",
+        "name": "Key West",
+        "lat": 24.550833,
+        "lng": -81.808333
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8725114",
+        "name": "Naples Bay, North",
+        "lat": 26.1367,
+        "lng": -81.7883
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8725520",
+        "name": "Fort Myers",
+        "lat": 26.648,
+        "lng": -81.871
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8726384",
+        "name": "Port Manatee",
+        "lat": 27.6387,
+        "lng": -82.562103
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8726520",
+        "name": "St. Petersburg",
+        "lat": 27.760599,
+        "lng": -82.6269
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8726607",
+        "name": "Old Port Tampa",
+        "lat": 27.8578,
+        "lng": -82.552803
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8726674",
+        "name": "East Bay",
+        "lat": 27.923056,
+        "lng": -82.421389
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8726724",
+        "name": "Clearwater Beach",
+        "lat": 27.978333,
+        "lng": -82.831667
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8727520",
+        "name": "Cedar Key",
+        "lat": 29.135,
+        "lng": -83.0317
+    },
+    {
+        "state": "FL",
+        "timezone": "EST",
+        "id": "8728690",
+        "name": "Apalachicola",
+        "lat": 29.724444,
+        "lng": -84.980556
+    },
+    {
+        "state": "FL",
+        "timezone": "CST",
+        "id": "8729108",
+        "name": "Panama City",
+        "lat": 30.149722,
+        "lng": -85.664444
+    },
+    {
+        "state": "FL",
+        "timezone": "CST",
+        "id": "8729210",
+        "name": "Panama City Beach",
+        "lat": 30.21375,
+        "lng": -85.878583
+    },
+    {
+        "state": "FL",
+        "timezone": "CST",
+        "id": "8729840",
+        "name": "Pensacola",
+        "lat": 30.4044,
+        "lng": -87.211197
+    },
+    {
+        "state": "AL",
+        "timezone": "CST",
+        "id": "8735180",
+        "name": "Dauphin Island",
+        "lat": 30.250278,
+        "lng": -88.075
+    },
+    {
+        "state": "AL",
+        "timezone": "CST",
+        "id": "8735391",
+        "name": "Dog River Bridge",
+        "lat": 30.565278,
+        "lng": -88.088056
+    },
+    {
+        "state": "AL",
+        "timezone": "CST",
+        "id": "8735523",
+        "name": "East Fowl River Bridge",
+        "lat": 30.443701,
+        "lng": -88.113899
+    },
+    {
+        "state": "AL",
+        "timezone": "CST",
+        "id": "8736897",
+        "name": "Coast Guard Sector Mobile",
+        "lat": 30.6495,
+        "lng": -88.058111
+    },
+    {
+        "state": "AL",
+        "timezone": "CST",
+        "id": "8737048",
+        "name": "Mobile State Docks",
+        "lat": 30.70461,
+        "lng": -88.03961
+    },
+    {
+        "state": "AL",
+        "timezone": "CST",
+        "id": "8737138",
+        "name": "Chickasaw Creek",
+        "lat": 30.7819,
+        "lng": -88.07361
+    },
+    {
+        "state": "AL",
+        "timezone": "CST",
+        "id": "8738043",
+        "name": "West Fowl River Bridge",
+        "lat": 30.3766,
+        "lng": -88.1586
+    },
+    {
+        "state": "AL",
+        "timezone": "CST",
+        "id": "8739803",
+        "name": "Bayou La Batre Bridge",
+        "lat": 30.40625,
+        "lng": -88.247806
+    },
+    {
+        "state": "MS",
+        "timezone": "CST",
+        "id": "8741533",
+        "name": "Pascagoula NOAA Lab",
+        "lat": 30.367778,
+        "lng": -88.563056
+    },
+    {
+        "state": "MS",
+        "timezone": "CST",
+        "id": "8747437",
+        "name": "Bay Waveland Yacht Club",
+        "lat": 30.326342,
+        "lng": -89.3258
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8760721",
+        "name": "Pilottown",
+        "lat": 29.179306,
+        "lng": -89.258833
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8760922",
+        "name": "Pilots Station East, S.W. Pass",
+        "lat": 28.932222,
+        "lng": -89.4075
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8761305",
+        "name": "Shell Beach",
+        "lat": 29.8683,
+        "lng": -89.673
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8761724",
+        "name": "Grand Isle",
+        "lat": 29.263333,
+        "lng": -89.956667
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8761927",
+        "name": "New Canal Station",
+        "lat": 30.027222,
+        "lng": -90.113333
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8761955",
+        "name": "Carrollton",
+        "lat": 29.9329,
+        "lng": -90.135472
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8762075",
+        "name": "Port Fourchon, Belle Pass",
+        "lat": 29.114167,
+        "lng": -90.199167
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8762482",
+        "name": "West Bank 1, Bayou Gauche",
+        "lat": 29.788611,
+        "lng": -90.420278
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8764044",
+        "name": "Berwick, Atchafalaya River",
+        "lat": 29.6675,
+        "lng": -91.237611
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8764227",
+        "name": "LAWMA, Amerada Pass",
+        "lat": 29.4496,
+        "lng": -91.338097
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8764314",
+        "name": "Eugene Island, North of, Atchafalaya Bay",
+        "lat": 29.3675,
+        "lng": -91.3839
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8766072",
+        "name": "Freshwater Canal Locks",
+        "lat": 29.551667,
+        "lng": -92.305278
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8767816",
+        "name": "Lake Charles",
+        "lat": 30.223611,
+        "lng": -93.221667
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8767961",
+        "name": "Bulk Terminal",
+        "lat": 30.1903,
+        "lng": -93.300697
+    },
+    {
+        "state": "LA",
+        "timezone": "CST",
+        "id": "8768094",
+        "name": "Calcasieu Pass",
+        "lat": 29.768167,
+        "lng": -93.342889
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8770475",
+        "name": "Port Arthur",
+        "lat": 29.866699,
+        "lng": -93.93
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8770520",
+        "name": "Rainbow Bridge",
+        "lat": 29.981194,
+        "lng": -93.884694
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8770613",
+        "name": "Morgans Point, Barbours Cut",
+        "lat": 29.681667,
+        "lng": -94.985
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8770777",
+        "name": "Manchester",
+        "lat": 29.726299,
+        "lng": -95.2658
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8770808",
+        "name": "High Island",
+        "lat": 29.59472,
+        "lng": -94.39028
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8770822",
+        "name": "Texas Point, Sabine Pass",
+        "lat": 29.689301,
+        "lng": -93.841797
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8770971",
+        "name": "Rollover Pass",
+        "lat": 29.514999,
+        "lng": -94.513298
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8771013",
+        "name": "Eagle Point, Galveston Bay",
+        "lat": 29.481306,
+        "lng": -94.917253
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8771341",
+        "name": "Galveston Bay Entrance, North Jetty",
+        "lat": 29.357461,
+        "lng": -94.724725
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8771367",
+        "name": "Sabine Offshore Light",
+        "lat": 29.469,
+        "lng": -93.720001
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8771450",
+        "name": "Galveston Pier 21",
+        "lat": 29.31,
+        "lng": -94.793306
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8771486",
+        "name": "Galveston Railroad Bridge",
+        "lat": 29.302583,
+        "lng": -94.897083
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8771972",
+        "name": "San Luis Pass",
+        "lat": 29.080556,
+        "lng": -95.130833
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8772471",
+        "name": "Freeport Harbor",
+        "lat": 28.935699,
+        "lng": -95.294197
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8772985",
+        "name": "Sargent",
+        "lat": 28.771389,
+        "lng": -95.6175
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8773037",
+        "name": "Seadrift",
+        "lat": 28.4069,
+        "lng": -96.712402
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8773146",
+        "name": "Matagorda City",
+        "lat": 28.71,
+        "lng": -95.914
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8773259",
+        "name": "Port Lavaca",
+        "lat": 28.6406,
+        "lng": -96.609802
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8773701",
+        "name": "Port O'Connor",
+        "lat": 28.4517,
+        "lng": -96.388298
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8773767",
+        "name": "Matagorda Bay Entrance Channel",
+        "lat": 28.426901,
+        "lng": -96.330101
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8774230",
+        "name": "Aransas Wildlife Refuge",
+        "lat": 28.2283,
+        "lng": -96.794998
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8774770",
+        "name": "Rockport",
+        "lat": 28.021667,
+        "lng": -97.046667
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8775132",
+        "name": "La Quinta Channel North",
+        "lat": 27.879167,
+        "lng": -97.286111
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8775222",
+        "name": "Viola Turning Basin",
+        "lat": 27.8461,
+        "lng": -97.520699
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8775237",
+        "name": "Port Aransas",
+        "lat": 27.839756,
+        "lng": -97.072767
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8775241",
+        "name": "Aransas, Aransas Pass",
+        "lat": 27.836599,
+        "lng": -97.039101
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8775244",
+        "name": "Nueces Bay",
+        "lat": 27.8328,
+        "lng": -97.485901
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8775283",
+        "name": "Enbridge, Ingleside",
+        "lat": 27.818611,
+        "lng": -97.208944
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8775296",
+        "name": "USS Lexington, Corpus Christi Bay",
+        "lat": 27.811694,
+        "lng": -97.39
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8775792",
+        "name": "Packery Channel",
+        "lat": 27.633301,
+        "lng": -97.236702
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8776139",
+        "name": "S. Bird Island",
+        "lat": 27.484361,
+        "lng": -97.318111
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8776604",
+        "name": "Baffin Bay",
+        "lat": 27.297,
+        "lng": -97.405167
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8777812",
+        "name": "Rincon Del San Jose",
+        "lat": 26.801194,
+        "lng": -97.4706
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8778490",
+        "name": "Port Mansfield",
+        "lat": 26.557639,
+        "lng": -97.425722
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8779280",
+        "name": "Realitos Peninsula",
+        "lat": 26.2625,
+        "lng": -97.285278
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8779748",
+        "name": "South Padre Island CG Station",
+        "lat": 26.072472,
+        "lng": -97.166861
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8779749",
+        "name": "SPI Brazos Santiago",
+        "lat": 26.0675,
+        "lng": -97.154722
+    },
+    {
+        "state": "TX",
+        "timezone": "CST",
+        "id": "8779770",
+        "name": "Port Isabel",
+        "lat": 26.061167,
+        "lng": -97.215528
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9014070",
+        "name": "Algonac",
+        "lat": 42.621113,
+        "lng": -82.526665
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9014080",
+        "name": "St. Clair State Police",
+        "lat": 42.812222,
+        "lng": -82.485558
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9014087",
+        "name": "Dry Dock",
+        "lat": 42.945278,
+        "lng": -82.443333
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9014090",
+        "name": "Mouth of the Black River",
+        "lat": 42.974724,
+        "lng": -82.418892
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9014098",
+        "name": "Fort Gratiot",
+        "lat": 43.0069,
+        "lng": -82.4225
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9034052",
+        "name": "St Clair Shores",
+        "lat": 42.473222,
+        "lng": -82.87925
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9044020",
+        "name": "Gibraltar",
+        "lat": 42.090861,
+        "lng": -83.186
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9044030",
+        "name": "Wyandotte",
+        "lat": 42.202306,
+        "lng": -83.1475
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9044036",
+        "name": "Fort Wayne",
+        "lat": 42.298914,
+        "lng": -83.09263
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9044049",
+        "name": "Windmill Point",
+        "lat": 42.357778,
+        "lng": -82.929944
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "9052000",
+        "name": "Cape Vincent",
+        "lat": 44.13028,
+        "lng": -76.332
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "9052030",
+        "name": "Oswego",
+        "lat": 43.46417,
+        "lng": -76.51183
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "9052058",
+        "name": "Rochester",
+        "lat": 43.26903,
+        "lng": -77.62575
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "9052076",
+        "name": "Olcott",
+        "lat": 43.33839,
+        "lng": -78.7273
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "9063007",
+        "name": "Ashland Ave",
+        "lat": 43.1,
+        "lng": -79.059917
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "9063009",
+        "name": "American Falls",
+        "lat": 43.08106,
+        "lng": -79.061361
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "9063012",
+        "name": "Niagara Intake",
+        "lat": 43.076889,
+        "lng": -79.014028
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "9063020",
+        "name": "Buffalo",
+        "lat": 42.877444,
+        "lng": -78.890472
+    },
+    {
+        "state": "NY",
+        "timezone": "EST",
+        "id": "9063028",
+        "name": "Sturgeon Point",
+        "lat": 42.691306,
+        "lng": -79.0473
+    },
+    {
+        "state": "PA",
+        "timezone": "EST",
+        "id": "9063038",
+        "name": "Erie, Lake Erie",
+        "lat": 42.1539,
+        "lng": -80.07583
+    },
+    {
+        "state": "OH",
+        "timezone": "EST",
+        "id": "9063053",
+        "name": "Fairport",
+        "lat": 41.75975,
+        "lng": -81.28106
+    },
+    {
+        "state": "OH",
+        "timezone": "EST",
+        "id": "9063063",
+        "name": "Cleveland",
+        "lat": 41.54086,
+        "lng": -81.635472
+    },
+    {
+        "state": "OH",
+        "timezone": "EST",
+        "id": "9063079",
+        "name": "Marblehead",
+        "lat": 41.54364,
+        "lng": -82.73139
+    },
+    {
+        "state": "OH",
+        "timezone": "EST",
+        "id": "9063085",
+        "name": "Toledo",
+        "lat": 41.69356,
+        "lng": -83.47228
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9063090",
+        "name": "Fermi Power Plant",
+        "lat": 41.96,
+        "lng": -83.257
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9075002",
+        "name": "Lakeport",
+        "lat": 43.140361,
+        "lng": -82.493889
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9075014",
+        "name": "Harbor Beach",
+        "lat": 43.84625,
+        "lng": -82.643083
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9075035",
+        "name": "Essexville",
+        "lat": 43.640997,
+        "lng": -83.84635
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9075065",
+        "name": "Alpena",
+        "lat": 45.063,
+        "lng": -83.4286
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9075080",
+        "name": "Mackinaw City",
+        "lat": 45.777222,
+        "lng": -84.721107
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9075099",
+        "name": "De Tour Village",
+        "lat": 45.9925,
+        "lng": -83.8982
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9076024",
+        "name": "Rock Cut",
+        "lat": 46.264294,
+        "lng": -84.191178
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9076027",
+        "name": "West Neebish Island",
+        "lat": 46.284667,
+        "lng": -84.209806
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9076033",
+        "name": "Little Rapids",
+        "lat": 46.485832,
+        "lng": -84.301666
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9076060",
+        "name": "U.S. Slip",
+        "lat": 46.500805,
+        "lng": -84.340363
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9076070",
+        "name": "S.W. Pier, St. Marys River",
+        "lat": 46.501361,
+        "lng": -84.372528
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9087023",
+        "name": "Ludington",
+        "lat": 43.947361,
+        "lng": -86.4415
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9087031",
+        "name": "Holland",
+        "lat": 42.773333,
+        "lng": -86.212778
+    },
+    {
+        "state": "IL",
+        "timezone": "CST",
+        "id": "9087044",
+        "name": "Calumet Harbor",
+        "lat": 41.729861,
+        "lng": -87.538389
+    },
+    {
+        "state": "WI",
+        "timezone": "CST",
+        "id": "9087057",
+        "name": "Milwaukee",
+        "lat": 43.001972,
+        "lng": -87.887639
+    },
+    {
+        "state": "WI",
+        "timezone": "CST",
+        "id": "9087068",
+        "name": "Kewaunee, Lake Michigan",
+        "lat": 44.463889,
+        "lng": -87.511111
+    },
+    {
+        "state": "WI",
+        "timezone": "CST",
+        "id": "9087072",
+        "name": "Sturgeon Bay Canal",
+        "lat": 44.794694,
+        "lng": -87.313917
+    },
+    {
+        "state": "WI",
+        "timezone": "CST",
+        "id": "9087077",
+        "name": "Green Bay East",
+        "lat": 44.539025,
+        "lng": -88.001058
+    },
+    {
+        "state": "MI",
+        "timezone": "CST",
+        "id": "9087088",
+        "name": "Menominee",
+        "lat": 45.095889,
+        "lng": -87.589944
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9087096",
+        "name": "Port Inland",
+        "lat": 45.969889,
+        "lng": -85.8715
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9099004",
+        "name": "Point Iroquois",
+        "lat": 46.484444,
+        "lng": -84.630836
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9099018",
+        "name": "Marquette C.G.",
+        "lat": 46.545555,
+        "lng": -87.378609
+    },
+    {
+        "state": "MI",
+        "timezone": "EST",
+        "id": "9099044",
+        "name": "Ontonagon",
+        "lat": 46.874443,
+        "lng": -89.324165
+    },
+    {
+        "state": "MN",
+        "timezone": "CST",
+        "id": "9099064",
+        "name": "Duluth",
+        "lat": 46.77575,
+        "lng": -92.092028
+    },
+    {
+        "state": "MN",
+        "timezone": "CST",
+        "id": "9099090",
+        "name": "Grand Marais, Lake Superior",
+        "lat": 47.7486,
+        "lng": -90.34128
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9410170",
+        "name": "San Diego",
+        "lat": 32.715556,
+        "lng": -117.176667
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9410230",
+        "name": "La Jolla",
+        "lat": 32.866889,
+        "lng": -117.257139
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9410660",
+        "name": "Los Angeles",
+        "lat": 33.72,
+        "lng": -118.271944
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9410840",
+        "name": "Santa Monica",
+        "lat": 34.0083,
+        "lng": -118.5
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9411340",
+        "name": "Santa Barbara",
+        "lat": 34.404589,
+        "lng": -119.692494
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9412110",
+        "name": "Port San Luis",
+        "lat": 35.168889,
+        "lng": -120.754167
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9413450",
+        "name": "Monterey",
+        "lat": 36.608889,
+        "lng": -121.891389
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9414290",
+        "name": "San Francisco",
+        "lat": 37.806306,
+        "lng": -122.465889
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9414523",
+        "name": "Redwood City",
+        "lat": 37.506814,
+        "lng": -122.211906
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9414750",
+        "name": "Alameda",
+        "lat": 37.771953,
+        "lng": -122.300261
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9414863",
+        "name": "Richmond",
+        "lat": 37.928299,
+        "lng": -122.400002
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9415020",
+        "name": "Point Reyes",
+        "lat": 37.994167,
+        "lng": -122.973611
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9415102",
+        "name": "Martinez-Amorco Pier",
+        "lat": 38.034639,
+        "lng": -122.125194
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9415144",
+        "name": "Port Chicago",
+        "lat": 38.056,
+        "lng": -122.0395
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9416841",
+        "name": "Arena Cove",
+        "lat": 38.914556,
+        "lng": -123.711083
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9418767",
+        "name": "North Spit",
+        "lat": 40.76691,
+        "lng": -124.21734
+    },
+    {
+        "state": "CA",
+        "timezone": "PST",
+        "id": "9419750",
+        "name": "Crescent City",
+        "lat": 41.74561,
+        "lng": -124.18439
+    },
+    {
+        "state": "OR",
+        "timezone": "PST",
+        "id": "9431647",
+        "name": "Port Orford",
+        "lat": 42.738972,
+        "lng": -124.49828
+    },
+    {
+        "state": "OR",
+        "timezone": "PST",
+        "id": "9432780",
+        "name": "Charleston",
+        "lat": 43.345,
+        "lng": -124.322
+    },
+    {
+        "state": "OR",
+        "timezone": "PST",
+        "id": "9435380",
+        "name": "South Beach",
+        "lat": 44.6254,
+        "lng": -124.04494
+    },
+    {
+        "state": "OR",
+        "timezone": "PST",
+        "id": "9437540",
+        "name": "Garibaldi",
+        "lat": 45.55453,
+        "lng": -123.91894
+    },
+    {
+        "state": "OR",
+        "timezone": "PST",
+        "id": "9439040",
+        "name": "Astoria",
+        "lat": 46.207306,
+        "lng": -123.768306
+    },
+    {
+        "state": "OR",
+        "timezone": "PST",
+        "id": "9439099",
+        "name": "Wauna",
+        "lat": 46.16,
+        "lng": -123.404999
+    },
+    {
+        "state": "OR",
+        "timezone": "PST",
+        "id": "9439201",
+        "name": "St Helens",
+        "lat": 45.865002,
+        "lng": -122.796997
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9440083",
+        "name": "Vancouver",
+        "lat": 45.631172,
+        "lng": -122.695772
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9440357",
+        "name": "TEMCO Kalama Terminal",
+        "lat": 45.983889,
+        "lng": -122.834444
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9440422",
+        "name": "Longview",
+        "lat": 46.106098,
+        "lng": -122.954201
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9440569",
+        "name": "Skamokawa",
+        "lat": 46.270306,
+        "lng": -123.4565
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9440581",
+        "name": "Cape Disappointment",
+        "lat": 46.281028,
+        "lng": -124.046278
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9440910",
+        "name": "Toke Point",
+        "lat": 46.7075,
+        "lng": -123.966944
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9441102",
+        "name": "Westport",
+        "lat": 46.90431,
+        "lng": -124.105083
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9442396",
+        "name": "La Push, Quillayute River",
+        "lat": 47.91284,
+        "lng": -124.63574
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9443090",
+        "name": "Neah Bay",
+        "lat": 48.370833,
+        "lng": -124.601667
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9444090",
+        "name": "Port Angeles",
+        "lat": 48.125,
+        "lng": -123.440002
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9444900",
+        "name": "Port Townsend",
+        "lat": 48.11122,
+        "lng": -122.75968
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9445958",
+        "name": "Bremerton",
+        "lat": 47.561699,
+        "lng": -122.623001
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9446484",
+        "name": "Tacoma",
+        "lat": 47.27,
+        "lng": -122.413
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9447130",
+        "name": "Seattle",
+        "lat": 47.602778,
+        "lng": -122.339444
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9449424",
+        "name": "Cherry Point",
+        "lat": 48.862717,
+        "lng": -122.758583
+    },
+    {
+        "state": "WA",
+        "timezone": "PST",
+        "id": "9449880",
+        "name": "Friday Harbor",
+        "lat": 48.545278,
+        "lng": -123.0125
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9450460",
+        "name": "Ketchikan",
+        "lat": 55.331944,
+        "lng": -131.626111
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9451054",
+        "name": "Port Alexander",
+        "lat": 56.24661,
+        "lng": -134.64772
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9451600",
+        "name": "Sitka",
+        "lat": 57.051308,
+        "lng": -135.343486
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9452210",
+        "name": "Juneau",
+        "lat": 58.2988,
+        "lng": -134.4106
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9452400",
+        "name": "Skagway, Taiya Inlet",
+        "lat": 59.4508,
+        "lng": -135.328
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9452634",
+        "name": "Elfin Cove",
+        "lat": 58.19472,
+        "lng": -136.34694
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9453220",
+        "name": "Yakutat, Yakutat Bay",
+        "lat": 59.548333,
+        "lng": -139.733056
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9454050",
+        "name": "Cordova",
+        "lat": 60.5575,
+        "lng": -145.755408
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9454240",
+        "name": "Valdez",
+        "lat": 61.125,
+        "lng": -146.362
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9455090",
+        "name": "Seward",
+        "lat": 60.1193,
+        "lng": -149.428108
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9455500",
+        "name": "Seldovia",
+        "lat": 59.440498,
+        "lng": -151.719894
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9455760",
+        "name": "Nikiski",
+        "lat": 60.683333,
+        "lng": -151.398056
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9455920",
+        "name": "Anchorage",
+        "lat": 61.2375,
+        "lng": -149.890389
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9457292",
+        "name": "Kodiak Island",
+        "lat": 57.731667,
+        "lng": -152.511944
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9457804",
+        "name": "Alitak",
+        "lat": 56.89739,
+        "lng": -154.248
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9459450",
+        "name": "Sand Point",
+        "lat": 55.33172,
+        "lng": -160.5043
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9459881",
+        "name": "King Cove",
+        "lat": 55.059889,
+        "lng": -162.326111
+    },
+    {
+        "state": "AK",
+        "timezone": "HAST",
+        "id": "9461380",
+        "name": "Adak Island",
+        "lat": 51.860639,
+        "lng": -176.637583
+    },
+    {
+        "state": "AK",
+        "timezone": "HAST",
+        "id": "9461710",
+        "name": "Atka",
+        "lat": 52.231944,
+        "lng": -174.1725
+    },
+    {
+        "state": "AK",
+        "timezone": "HAST",
+        "id": "9462450",
+        "name": "Nikolski",
+        "lat": 52.94061,
+        "lng": -168.871306
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9462620",
+        "name": "Unalaska",
+        "lat": 53.879194,
+        "lng": -166.540306
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9463502",
+        "name": "Port Moller",
+        "lat": 55.985833,
+        "lng": -160.573611
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9464212",
+        "name": "Village Cove, St Paul Island",
+        "lat": 57.125278,
+        "lng": -170.285278
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9468333",
+        "name": "Unalakleet",
+        "lat": 63.871361,
+        "lng": -160.7843
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9468756",
+        "name": "Nome, Norton Sound",
+        "lat": 64.494611,
+        "lng": -165.439639
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9491094",
+        "name": "Red Dog Dock",
+        "lat": 67.575806,
+        "lng": -164.064389
+    },
+    {
+        "state": "AK",
+        "timezone": "AKST",
+        "id": "9497645",
+        "name": "Prudhoe Bay",
+        "lat": 70.411389,
+        "lng": -148.531667
+    },
+    {
+        "state": "VI",
+        "timezone": "AST",
+        "id": "9751364",
+        "name": "Christiansted Harbor, St Croix",
+        "lat": 17.747694,
+        "lng": -64.69839
+    },
+    {
+        "state": "VI",
+        "timezone": "AST",
+        "id": "9751381",
+        "name": "Lameshur Bay, St John",
+        "lat": 18.31825,
+        "lng": -64.7242
+    },
+    {
+        "state": "VI",
+        "timezone": "AST",
+        "id": "9751401",
+        "name": "Limetree Bay",
+        "lat": 17.6947,
+        "lng": -64.753799
+    },
+    {
+        "state": "VI",
+        "timezone": "AST",
+        "id": "9751639",
+        "name": "Charlotte Amalie",
+        "lat": 18.330583,
+        "lng": -64.925806
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9752235",
+        "name": "Culebra",
+        "lat": 18.300861,
+        "lng": -65.302472
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9752621",
+        "name": "Isabel Segunda, Vieques Island",
+        "lat": 18.152528,
+        "lng": -65.443806
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9752695",
+        "name": "Esperanza, Vieques Island",
+        "lat": 18.093861,
+        "lng": -65.471361
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9753216",
+        "name": "Fajardo",
+        "lat": 18.335278,
+        "lng": -65.631111
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9754229",
+        "name": "Yabucoa Harbor",
+        "lat": 18.055083,
+        "lng": -65.833
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9755371",
+        "name": "San Juan, La Puntilla, San Juan Bay",
+        "lat": 18.458944,
+        "lng": -66.116417
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9755968",
+        "name": "Salinas, Bahia de Jobos",
+        "lat": 17.949083,
+        "lng": -66.225944
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9757811",
+        "name": "Arecibo",
+        "lat": 18.480528,
+        "lng": -66.702361
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9758066",
+        "name": "Guayanilla, Bahia de Guayanilla",
+        "lat": 18.005861,
+        "lng": -66.766611
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9759110",
+        "name": "Magueyes Island",
+        "lat": 17.9701,
+        "lng": -67.04639
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9759394",
+        "name": "Mayaguez",
+        "lat": 18.218833,
+        "lng": -67.162444
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9759413",
+        "name": "Aguadilla, Crashboat Beach",
+        "lat": 18.456639,
+        "lng": -67.164583
+    },
+    {
+        "state": "PR",
+        "timezone": "AST",
+        "id": "9759938",
+        "name": "Mona Island",
+        "lat": 18.089289,
+        "lng": -67.938208
+    }
+]

@@ -1,0 +1,101 @@
+[
+  {
+    "stnId": "8545240",
+    "stnName": "Philadelphia, PA",
+    "decade": 2020,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 7,
+    "intLow": 7,
+    "intermediate": 7,
+    "intHigh": 7,
+    "high": 7
+  },
+  {
+    "stnId": "8545240",
+    "stnName": "Philadelphia, PA",
+    "decade": 2030,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 10,
+    "intLow": 15,
+    "intermediate": 15,
+    "intHigh": 15,
+    "high": 15
+  },
+  {
+    "stnId": "8545240",
+    "stnName": "Philadelphia, PA",
+    "decade": 2040,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 25,
+    "intLow": 30,
+    "intermediate": 30,
+    "intHigh": 35,
+    "high": 40
+  },
+  {
+    "stnId": "8545240",
+    "stnName": "Philadelphia, PA",
+    "decade": 2050,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 40,
+    "intLow": 55,
+    "intermediate": 65,
+    "intHigh": 90,
+    "high": 105
+  },
+  {
+    "stnId": "8545240",
+    "stnName": "Philadelphia, PA",
+    "decade": 2060,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 65,
+    "intLow": 95,
+    "intermediate": 125,
+    "intHigh": 190,
+    "high": 235
+  },
+  {
+    "stnId": "8545240",
+    "stnName": "Philadelphia, PA",
+    "decade": 2070,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 95,
+    "intLow": 145,
+    "intermediate": 210,
+    "intHigh": 290,
+    "high": 335
+  },
+  {
+    "stnId": "8545240",
+    "stnName": "Philadelphia, PA",
+    "decade": 2080,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 120,
+    "intLow": 195,
+    "intermediate": 290,
+    "intHigh": 345,
+    "high": 360
+  },
+  {
+    "stnId": "8545240",
+    "stnName": "Philadelphia, PA",
+    "decade": 2090,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 145,
+    "intLow": 245,
+    "intermediate": 340,
+    "intHigh": 360,
+    "high": 365
+  },
+  {
+    "stnId": "8545240",
+    "stnName": "Philadelphia, PA",
+    "decade": 2100,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 175,
+    "intLow": 285,
+    "intermediate": 360,
+    "intHigh": 365,
+    "high": 365
+  }
+]

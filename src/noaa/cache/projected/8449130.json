@@ -1,0 +1,101 @@
+[
+  {
+    "stnId": "8449130",
+    "stnName": "Nantucket Island, MA",
+    "decade": 2020,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 5,
+    "intLow": 5,
+    "intermediate": 5,
+    "intHigh": 5,
+    "high": 5
+  },
+  {
+    "stnId": "8449130",
+    "stnName": "Nantucket Island, MA",
+    "decade": 2030,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 9,
+    "intLow": 10,
+    "intermediate": 10,
+    "intHigh": 10,
+    "high": 10
+  },
+  {
+    "stnId": "8449130",
+    "stnName": "Nantucket Island, MA",
+    "decade": 2040,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 20,
+    "intLow": 25,
+    "intermediate": 30,
+    "intHigh": 35,
+    "high": 40
+  },
+  {
+    "stnId": "8449130",
+    "stnName": "Nantucket Island, MA",
+    "decade": 2050,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 40,
+    "intLow": 55,
+    "intermediate": 70,
+    "intHigh": 100,
+    "high": 120
+  },
+  {
+    "stnId": "8449130",
+    "stnName": "Nantucket Island, MA",
+    "decade": 2060,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 75,
+    "intLow": 110,
+    "intermediate": 155,
+    "intHigh": 220,
+    "high": 270
+  },
+  {
+    "stnId": "8449130",
+    "stnName": "Nantucket Island, MA",
+    "decade": 2070,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 110,
+    "intLow": 180,
+    "intermediate": 260,
+    "intHigh": 335,
+    "high": 355
+  },
+  {
+    "stnId": "8449130",
+    "stnName": "Nantucket Island, MA",
+    "decade": 2080,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 140,
+    "intLow": 245,
+    "intermediate": 340,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "8449130",
+    "stnName": "Nantucket Island, MA",
+    "decade": 2090,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 175,
+    "intLow": 300,
+    "intermediate": 360,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "8449130",
+    "stnName": "Nantucket Island, MA",
+    "decade": 2100,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 215,
+    "intLow": 335,
+    "intermediate": 365,
+    "intHigh": 365,
+    "high": 365
+  }
+]

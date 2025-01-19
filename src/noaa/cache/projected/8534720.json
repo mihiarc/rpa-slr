@@ -1,0 +1,101 @@
+[
+  {
+    "stnId": "8534720",
+    "stnName": "Atlantic City, NJ",
+    "decade": 2020,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 15,
+    "intLow": 15,
+    "intermediate": 15,
+    "intHigh": 15,
+    "high": 15
+  },
+  {
+    "stnId": "8534720",
+    "stnName": "Atlantic City, NJ",
+    "decade": 2030,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 25,
+    "intLow": 30,
+    "intermediate": 30,
+    "intHigh": 30,
+    "high": 30
+  },
+  {
+    "stnId": "8534720",
+    "stnName": "Atlantic City, NJ",
+    "decade": 2040,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 45,
+    "intLow": 55,
+    "intermediate": 60,
+    "intHigh": 70,
+    "high": 75
+  },
+  {
+    "stnId": "8534720",
+    "stnName": "Atlantic City, NJ",
+    "decade": 2050,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 75,
+    "intLow": 95,
+    "intermediate": 110,
+    "intHigh": 135,
+    "high": 155
+  },
+  {
+    "stnId": "8534720",
+    "stnName": "Atlantic City, NJ",
+    "decade": 2060,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 115,
+    "intLow": 145,
+    "intermediate": 180,
+    "intHigh": 230,
+    "high": 275
+  },
+  {
+    "stnId": "8534720",
+    "stnName": "Atlantic City, NJ",
+    "decade": 2070,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 150,
+    "intLow": 200,
+    "intermediate": 260,
+    "intHigh": 320,
+    "high": 345
+  },
+  {
+    "stnId": "8534720",
+    "stnName": "Atlantic City, NJ",
+    "decade": 2080,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 185,
+    "intLow": 255,
+    "intermediate": 320,
+    "intHigh": 355,
+    "high": 365
+  },
+  {
+    "stnId": "8534720",
+    "stnName": "Atlantic City, NJ",
+    "decade": 2090,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 210,
+    "intLow": 295,
+    "intermediate": 355,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "8534720",
+    "stnName": "Atlantic City, NJ",
+    "decade": 2100,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 240,
+    "intLow": 325,
+    "intermediate": 365,
+    "intHigh": 365,
+    "high": 365
+  }
+]

@@ -1,0 +1,101 @@
+[
+  {
+    "stnId": "1617760",
+    "stnName": "Hilo, Hilo Bay, Kuhio Bay, HI",
+    "decade": 2020,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 20,
+    "intLow": 25,
+    "intermediate": 25,
+    "intHigh": 25,
+    "high": 25
+  },
+  {
+    "stnId": "1617760",
+    "stnName": "Hilo, Hilo Bay, Kuhio Bay, HI",
+    "decade": 2030,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 45,
+    "intLow": 50,
+    "intermediate": 55,
+    "intHigh": 60,
+    "high": 65
+  },
+  {
+    "stnId": "1617760",
+    "stnName": "Hilo, Hilo Bay, Kuhio Bay, HI",
+    "decade": 2040,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 75,
+    "intLow": 95,
+    "intermediate": 110,
+    "intHigh": 135,
+    "high": 155
+  },
+  {
+    "stnId": "1617760",
+    "stnName": "Hilo, Hilo Bay, Kuhio Bay, HI",
+    "decade": 2050,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 110,
+    "intLow": 160,
+    "intermediate": 200,
+    "intHigh": 260,
+    "high": 305
+  },
+  {
+    "stnId": "1617760",
+    "stnName": "Hilo, Hilo Bay, Kuhio Bay, HI",
+    "decade": 2060,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 160,
+    "intLow": 235,
+    "intermediate": 300,
+    "intHigh": 350,
+    "high": 365
+  },
+  {
+    "stnId": "1617760",
+    "stnName": "Hilo, Hilo Bay, Kuhio Bay, HI",
+    "decade": 2070,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 210,
+    "intLow": 300,
+    "intermediate": 355,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "1617760",
+    "stnName": "Hilo, Hilo Bay, Kuhio Bay, HI",
+    "decade": 2080,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 260,
+    "intLow": 345,
+    "intermediate": 365,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "1617760",
+    "stnName": "Hilo, Hilo Bay, Kuhio Bay, HI",
+    "decade": 2090,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 300,
+    "intLow": 360,
+    "intermediate": 365,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "1617760",
+    "stnName": "Hilo, Hilo Bay, Kuhio Bay, HI",
+    "decade": 2100,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 330,
+    "intLow": 365,
+    "intermediate": 365,
+    "intHigh": 365,
+    "high": 365
+  }
+]

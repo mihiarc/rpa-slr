@@ -1,0 +1,101 @@
+[
+  {
+    "stnId": "8536110",
+    "stnName": "Cape May, NJ",
+    "decade": 2020,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 10,
+    "intLow": 10,
+    "intermediate": 10,
+    "intHigh": 10,
+    "high": 10
+  },
+  {
+    "stnId": "8536110",
+    "stnName": "Cape May, NJ",
+    "decade": 2030,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 20,
+    "intLow": 20,
+    "intermediate": 25,
+    "intHigh": 25,
+    "high": 25
+  },
+  {
+    "stnId": "8536110",
+    "stnName": "Cape May, NJ",
+    "decade": 2040,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 40,
+    "intLow": 45,
+    "intermediate": 50,
+    "intHigh": 55,
+    "high": 60
+  },
+  {
+    "stnId": "8536110",
+    "stnName": "Cape May, NJ",
+    "decade": 2050,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 65,
+    "intLow": 85,
+    "intermediate": 100,
+    "intHigh": 120,
+    "high": 145
+  },
+  {
+    "stnId": "8536110",
+    "stnName": "Cape May, NJ",
+    "decade": 2060,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 105,
+    "intLow": 135,
+    "intermediate": 170,
+    "intHigh": 225,
+    "high": 270
+  },
+  {
+    "stnId": "8536110",
+    "stnName": "Cape May, NJ",
+    "decade": 2070,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 140,
+    "intLow": 190,
+    "intermediate": 250,
+    "intHigh": 315,
+    "high": 345
+  },
+  {
+    "stnId": "8536110",
+    "stnName": "Cape May, NJ",
+    "decade": 2080,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 175,
+    "intLow": 245,
+    "intermediate": 320,
+    "intHigh": 355,
+    "high": 365
+  },
+  {
+    "stnId": "8536110",
+    "stnName": "Cape May, NJ",
+    "decade": 2090,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 205,
+    "intLow": 290,
+    "intermediate": 350,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "8536110",
+    "stnName": "Cape May, NJ",
+    "decade": 2100,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 235,
+    "intLow": 320,
+    "intermediate": 365,
+    "intHigh": 365,
+    "high": 365
+  }
+]

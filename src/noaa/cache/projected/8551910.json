@@ -1,0 +1,101 @@
+[
+  {
+    "stnId": "8551910",
+    "stnName": "Reedy Point, DE",
+    "decade": 2020,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 3,
+    "intLow": 4,
+    "intermediate": 4,
+    "intHigh": 4,
+    "high": 4
+  },
+  {
+    "stnId": "8551910",
+    "stnName": "Reedy Point, DE",
+    "decade": 2030,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 8,
+    "intLow": 9,
+    "intermediate": 10,
+    "intHigh": 10,
+    "high": 10
+  },
+  {
+    "stnId": "8551910",
+    "stnName": "Reedy Point, DE",
+    "decade": 2040,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 15,
+    "intLow": 25,
+    "intermediate": 25,
+    "intHigh": 30,
+    "high": 35
+  },
+  {
+    "stnId": "8551910",
+    "stnName": "Reedy Point, DE",
+    "decade": 2050,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 35,
+    "intLow": 50,
+    "intermediate": 65,
+    "intHigh": 90,
+    "high": 115
+  },
+  {
+    "stnId": "8551910",
+    "stnName": "Reedy Point, DE",
+    "decade": 2060,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 65,
+    "intLow": 95,
+    "intermediate": 135,
+    "intHigh": 195,
+    "high": 250
+  },
+  {
+    "stnId": "8551910",
+    "stnName": "Reedy Point, DE",
+    "decade": 2070,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 95,
+    "intLow": 155,
+    "intermediate": 230,
+    "intHigh": 300,
+    "high": 340
+  },
+  {
+    "stnId": "8551910",
+    "stnName": "Reedy Point, DE",
+    "decade": 2080,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 130,
+    "intLow": 215,
+    "intermediate": 300,
+    "intHigh": 350,
+    "high": 360
+  },
+  {
+    "stnId": "8551910",
+    "stnName": "Reedy Point, DE",
+    "decade": 2090,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 155,
+    "intLow": 265,
+    "intermediate": 345,
+    "intHigh": 360,
+    "high": 365
+  },
+  {
+    "stnId": "8551910",
+    "stnName": "Reedy Point, DE",
+    "decade": 2100,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 190,
+    "intLow": 300,
+    "intermediate": 360,
+    "intHigh": 365,
+    "high": 365
+  }
+]

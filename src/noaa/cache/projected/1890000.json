@@ -1,0 +1,101 @@
+[
+  {
+    "stnId": "1890000",
+    "stnName": "Wake Island, Pacific Ocean",
+    "decade": 2020,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 20,
+    "intLow": 20,
+    "intermediate": 25,
+    "intHigh": 25,
+    "high": 25
+  },
+  {
+    "stnId": "1890000",
+    "stnName": "Wake Island, Pacific Ocean",
+    "decade": 2030,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 35,
+    "intLow": 40,
+    "intermediate": 45,
+    "intHigh": 50,
+    "high": 55
+  },
+  {
+    "stnId": "1890000",
+    "stnName": "Wake Island, Pacific Ocean",
+    "decade": 2040,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 55,
+    "intLow": 70,
+    "intermediate": 85,
+    "intHigh": 105,
+    "high": 125
+  },
+  {
+    "stnId": "1890000",
+    "stnName": "Wake Island, Pacific Ocean",
+    "decade": 2050,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 80,
+    "intLow": 115,
+    "intermediate": 150,
+    "intHigh": 195,
+    "high": 245
+  },
+  {
+    "stnId": "1890000",
+    "stnName": "Wake Island, Pacific Ocean",
+    "decade": 2060,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 105,
+    "intLow": 165,
+    "intermediate": 225,
+    "intHigh": 310,
+    "high": 350
+  },
+  {
+    "stnId": "1890000",
+    "stnName": "Wake Island, Pacific Ocean",
+    "decade": 2070,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 135,
+    "intLow": 220,
+    "intermediate": 305,
+    "intHigh": 360,
+    "high": 365
+  },
+  {
+    "stnId": "1890000",
+    "stnName": "Wake Island, Pacific Ocean",
+    "decade": 2080,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 170,
+    "intLow": 275,
+    "intermediate": 355,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "1890000",
+    "stnName": "Wake Island, Pacific Ocean",
+    "decade": 2090,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 200,
+    "intLow": 320,
+    "intermediate": 365,
+    "intHigh": 365,
+    "high": 365
+  },
+  {
+    "stnId": "1890000",
+    "stnName": "Wake Island, Pacific Ocean",
+    "decade": 2100,
+    "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
+    "low": 240,
+    "intLow": 345,
+    "intermediate": 365,
+    "intHigh": 365,
+    "high": 365
+  }
+]

@@ -1,0 +1,13 @@
+# Data directory (ignores all contents recursively)
+data/
+
+# Additional data file patterns (in case they exist outside data/)
+*.geojson
+*.parquet
+*.cpg
+*.csv
+
+# OS files
+.DS_Store
+__pycache__/
+*.pyc
