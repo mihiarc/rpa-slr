@@ -2,6 +2,7 @@ import geopandas as gpd
 import pandas as pd
 import multiprocessing as mp
 from functools import partial
+import os
 
 # Define Great Lakes region code
 GREAT_LAKES_REGION = 'L'  # The code used for Great Lakes regions in the shoreline data
@@ -10,75 +11,95 @@ def process_chunk(counties_chunk, ocean_shoreline_union):
     """Process a chunk of counties in parallel."""
     return counties_chunk[counties_chunk.geometry.intersects(ocean_shoreline_union)]
 
-def find_coastal_counties(shoreline_path: str, counties_path: str, output_path: str) -> gpd.GeoDataFrame:
-    """Find counties that intersect with the ocean shoreline, excluding Great Lakes.
-
-    Args:
-        shoreline_path: Path to the shoreline parquet file
-        counties_path: Path to the counties parquet file
-        output_path: Path where the coastal counties parquet file will be saved
-    """
-    print("Reading data...")
-    shoreline = gpd.read_parquet(shoreline_path)
-    counties = gpd.read_parquet(counties_path)
+def find_coastal_counties_for_region(shoreline_gdf: gpd.GeoDataFrame, counties: gpd.GeoDataFrame, region_name: str) -> gpd.GeoDataFrame:
+    """Find counties that intersect with a specific region's shoreline.
     
-    # Print region statistics
-    print("\nShoreline segments by region:")
-    print(shoreline['REGIONS'].value_counts())
-    print()
+    Args:
+        shoreline_gdf: GeoDataFrame containing the region's shoreline
+        counties: GeoDataFrame containing all counties
+        region_name: Name of the region being processed
+    """
+    print(f"\nProcessing region: {region_name}")
     
     # Ensure same CRS
-    counties = counties.to_crs(shoreline.crs)
+    counties = counties.to_crs(shoreline_gdf.crs)
     
-    # Separate Great Lakes and ocean shorelines
-    print("Separating Great Lakes and ocean shorelines...")
-    great_lakes_shoreline = shoreline[shoreline['REGIONS'] == GREAT_LAKES_REGION]
-    ocean_shoreline = shoreline[shoreline['REGIONS'] != GREAT_LAKES_REGION]
+    # Create shoreline union
+    print("Creating shoreline union...")
+    shoreline_union = shoreline_gdf.unary_union
     
-    print(f"Found {len(great_lakes_shoreline)} Great Lakes shoreline segments and {len(ocean_shoreline)} ocean shoreline segments")
-    
-    # Pre-filter counties that only touch Great Lakes
-    print("Pre-filtering Great Lakes counties...")
-    great_lakes_union = great_lakes_shoreline.unary_union
-    lakes_counties = counties[counties.geometry.intersects(great_lakes_union)]
-    
-    # Get counties that don't touch Great Lakes or might touch both
-    non_lakes_counties = counties[~counties.index.isin(lakes_counties.index)]
-    
-    print(f"Filtered out {len(lakes_counties)} Great Lakes counties, processing {len(non_lakes_counties)} remaining counties...")
-    
-    # Create ocean shoreline union
-    print("Creating ocean shoreline union...")
-    ocean_shoreline_union = ocean_shoreline.unary_union
-    
-    # Split remaining counties into chunks for parallel processing
+    # Split counties into chunks for parallel processing
     n_cores = mp.cpu_count()
-    chunk_size = max(1, len(non_lakes_counties) // n_cores)
-    chunks = [non_lakes_counties.iloc[i:i + chunk_size] for i in range(0, len(non_lakes_counties), chunk_size)]
+    chunk_size = max(1, len(counties) // n_cores)
+    chunks = [counties.iloc[i:i + chunk_size] for i in range(0, len(counties), chunk_size)]
     
     # Process chunks in parallel
     print(f"Finding coastal counties using {n_cores} cores...")
     with mp.Pool(n_cores) as pool:
-        process_func = partial(process_chunk, ocean_shoreline_union=ocean_shoreline_union)
+        process_func = partial(process_chunk, ocean_shoreline_union=shoreline_union)
         coastal_chunks = pool.map(process_func, chunks)
     
     # Combine results
     coastal_counties = gpd.GeoDataFrame(pd.concat(coastal_chunks, ignore_index=True))
-    print(f"Found {len(coastal_counties)} coastal counties")
+    print(f"Found {len(coastal_counties)} coastal counties in {region_name}")
+    
+    # Add region information
+    coastal_counties['region'] = region_name
+    
+    return coastal_counties
+
+def find_coastal_counties(regional_shorelines_dir: str, counties_path: str, output_path: str) -> gpd.GeoDataFrame:
+    """Find counties that intersect with regional shorelines.
+
+    Args:
+        regional_shorelines_dir: Directory containing regional shoreline parquet files
+        counties_path: Path to the counties parquet file
+        output_path: Path where the coastal counties parquet file will be saved
+    """
+    print("Reading county data...")
+    counties = gpd.read_parquet(counties_path)
+    
+    # Get list of regional parquet files
+    region_files = [f for f in os.listdir(regional_shorelines_dir) if f.endswith('.parquet')]
+    print(f"\nFound {len(region_files)} regions to process")
+    
+    all_coastal_counties = []
+    
+    # Process each region
+    for region_file in region_files:
+        region_name = region_file.replace('.parquet', '')
+        region_path = os.path.join(regional_shorelines_dir, region_file)
+        
+        print(f"\nReading {region_name} shoreline data...")
+        shoreline = gpd.read_parquet(region_path)
+        
+        # Find coastal counties for this region
+        regional_coastal_counties = find_coastal_counties_for_region(shoreline, counties, region_name)
+        all_coastal_counties.append(regional_coastal_counties)
+    
+    # Combine results from all regions
+    coastal_counties = gpd.GeoDataFrame(pd.concat(all_coastal_counties, ignore_index=True))
+    
+    # Remove duplicates (counties that touch multiple regions)
+    coastal_counties = coastal_counties.drop_duplicates(subset=['GEOID'])
+    
+    print(f"\nTotal unique coastal counties found: {len(coastal_counties)}")
+    print("Counties by region:")
+    print(coastal_counties['region'].value_counts())
     
     # Save results
     coastal_counties.to_parquet(output_path)
-    print(f"Saved to {output_path}")
+    print(f"\nSaved to {output_path}")
     
     return coastal_counties
 
 def main():
-    """Find coastal counties from parquet files."""
-    shoreline_parquet = "shoreline.parquet"
-    county_parquet = "county.parquet"
-    coastal_counties_parquet = "coastal_counties.parquet"
+    """Find coastal counties from regional shoreline parquet files."""
+    regional_shorelines_dir = "data/processed/regional_shorelines"
+    county_parquet = "data/processed/county.parquet"
+    coastal_counties_parquet = "data/processed/coastal_counties.parquet"
     
-    find_coastal_counties(shoreline_parquet, county_parquet, coastal_counties_parquet)
+    find_coastal_counties(regional_shorelines_dir, county_parquet, coastal_counties_parquet)
 
 if __name__ == "__main__":
     main() 
