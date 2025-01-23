@@ -2,6 +2,72 @@
 
 This project processes NOAA's High Tide Flooding (HTF) data to create county-level estimates of both historical flooding events and future flooding projections. It combines gauge-level measurements with spatial relationships between tide gauges and counties to generate weighted estimates of flooding frequency for coastal counties.
 
+
+## Preprocessing Pipeline
+
+```mermaid
+graph TD
+    subgraph Raw Data
+        A1[US Medium Shoreline Shapefile] --> B1[shapefile_converter.py]
+        A2[County Shapefile] --> B1
+        A3[Regional Shoreline Shapefiles] --> B1
+    end
+
+    subgraph Shapefile Processing
+        B1 --> C1[shoreline.parquet]
+        B1 --> C2[county.parquet]
+        B1 --> C3[regional_shorelines/*.parquet]
+    end
+
+    subgraph County Processing
+        C2 --> D1[coastal_counties_finder.py]
+        C3 --> D1
+        D1 --> E1[coastal_counties.parquet]
+    end
+
+    subgraph Reference Point Generation
+        E1 --> F1[coastal_points.py]
+        C3 --> F1
+        F1 --> G1[coastal_reference_points.parquet]
+    end
+```
+
+## Data Pipeline
+
+```mermaid
+graph TD
+    subgraph Data Collection
+        A[NOAA Historical HTF API] --> B[htf_fetcher.py]
+        C[NOAA Projected HTF API] --> D[htf_projector.py]
+        E[Gauge-County Mapping] --> F[imputed_gauge_county_mapping.parquet]
+    end
+
+    subgraph Data Processing
+        B --> G[historical_htf.parquet]
+        D --> H[projected_htf.parquet]
+        
+        G --> I[data_loader.py]
+        H --> I
+        F --> I
+        
+        I --> J[assignment.py]
+        J --> K[calculate_historical_county_htf]
+        J --> L[calculate_projected_county_htf]
+    end
+
+    subgraph Output Generation
+        K --> M[historical_county_htf.csv/parquet]
+        L --> N[projected_county_htf.csv/parquet]
+        
+        M --> O[Visualization & Analysis]
+        N --> O
+        
+        O --> P[HTF Analysis Report]
+        O --> Q[Data Visualizations]
+    end
+```
+
+
 ## Data Products
 
 The project generates two main datasets:
