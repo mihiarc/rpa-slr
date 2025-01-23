@@ -3,9 +3,10 @@ Cache manager for NOAA data.
 """
 
 from typing import Dict, List, Optional
-import json
-import logging
 from pathlib import Path
+import logging
+import json
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +19,17 @@ class NOAACache:
         Args:
             config_dir: Optional custom config directory
         """
-        self.config_dir = config_dir or Path(__file__).parent
-        self.stations_file = self.config_dir / "data" / "tide-stations-list.json"
-        self.cache_dir = self.config_dir / "cache"
+        # Use project root config directory by default
+        self.config_dir = config_dir or (Path(__file__).parent.parent.parent / "config")
+        
+        # Load NOAA settings from project root config directory
+        settings_file = self.config_dir / "noaa_settings.yaml"
+        with open(settings_file) as f:
+            self.settings = yaml.safe_load(f)
+        
+        # Set up paths based on config
+        self.stations_file = self.config_dir / "tide-stations-list.yaml"
+        self.cache_dir = Path(__file__).parent / self.settings['cache']['directory']
         self._stations = None
         
         # Ensure cache directory exists
@@ -47,7 +56,16 @@ class NOAACache:
         if self._stations is None:
             try:
                 with open(self.stations_file) as f:
-                    self._stations = json.load(f)
+                    data = yaml.safe_load(f)
+                    # Convert YAML structure to list format for compatibility
+                    self._stations = [
+                        {
+                            'id': station_id,
+                            'name': station_data['name'],
+                            'location': station_data['location']
+                        }
+                        for station_id, station_data in data['stations'].items()
+                    ]
             except Exception as e:
                 logger.error(f"Error reading stations list: {e}")
                 self._stations = []
@@ -118,6 +136,9 @@ class NOAACache:
             data: Data to cache
             data_type: Type of data ('historical' or 'projected')
         """
+        if data_type not in self.settings['cache']['data_types']:
+            raise ValueError(f"Invalid data type: {data_type}")
+            
         cache_path = self._get_cache_path(station_id, data_type)
         
         # Ensure parent directory exists

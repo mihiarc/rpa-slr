@@ -94,13 +94,17 @@ class ImputationManager:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         log_file = log_dir / f"imputation_{timestamp}.log"
         
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        # Configure root logger
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.StreamHandler(),  # Console handler
+                logging.FileHandler(log_file)  # File handler
+            ]
         )
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        
+        logger.info("Logging configured for both console and file output")
     
     def _generate_distance_histogram(self, df: pd.DataFrame) -> Path:
         """Generate histogram of distances to nearest gauges."""
@@ -220,10 +224,10 @@ Generated on: {{ timestamp }}
     
     def prepare_imputation_structure(self) -> pd.DataFrame:
         """
-        Prepare data structure for imputation.
+        Prepare the imputation structure by finding nearest gauges and calculating weights.
         
         Returns:
-            DataFrame with reference points and their gauge associations
+            DataFrame with imputation structure
         """
         logger.info("Loading input data...")
         gauge_stations, reference_points = self.data_loader.load_all()
@@ -232,32 +236,32 @@ Generated on: {{ timestamp }}
         point_data = self.gauge_finder.find_nearest(
             reference_points,
             gauge_stations,
-            k=self.k_nearest,
-            initial_max_distance=INITIAL_SEARCH_DISTANCE,
-            max_distance_limit=MAX_SEARCH_DISTANCE,
-            distance_increment=DISTANCE_INCREMENT
+            k=self.k_nearest
         )
         
         logger.info("Calculating weights...")
-        weighted_points = self.weight_calculator.calculate_for_points(point_data)
-        
-        # Convert to DataFrame for easier manipulation
-        df = pd.DataFrame(weighted_points)
-        
-        # Add metadata columns
-        df['n_gauges'] = df.apply(
-            lambda row: sum(1 for i in range(1, self.k_nearest + 1)
-                          if row.get(f'gauge_id_{i}') is not None),
-            axis=1
-        )
-        
-        df['total_weight'] = df.apply(
-            lambda row: sum(row.get(f'weight_{i}', 0)
-                          for i in range(1, self.k_nearest + 1)),
-            axis=1
-        )
-        
-        return df
+        logger.info(f"Processing {len(point_data)} reference points with {self.k_nearest} nearest gauges each")
+        try:
+            weighted_points = self.weight_calculator.calculate_for_points(point_data)
+            
+            # Convert to DataFrame
+            df = pd.DataFrame(weighted_points)
+            logger.info("Weight calculation completed successfully")
+            
+            # Log weight statistics
+            for i in range(1, self.k_nearest + 1):
+                weight_stats = df[f'weight_{i}'].describe()
+                logger.info(f"Gauge {i} weight statistics:")
+                logger.info(f"  Mean: {weight_stats['mean']:.3f}")
+                logger.info(f"  Std: {weight_stats['std']:.3f}")
+                logger.info(f"  Min: {weight_stats['min']:.3f}")
+                logger.info(f"  Max: {weight_stats['max']:.3f}")
+            
+            return df
+            
+        except Exception as e:
+            logger.error(f"Error during weight calculation: {str(e)}")
+            raise
     
     def save_imputation_structure(self,
                                 df: pd.DataFrame,

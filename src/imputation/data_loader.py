@@ -7,6 +7,7 @@ import geopandas as gpd
 import pandas as pd
 from pathlib import Path
 import json
+import yaml
 import logging
 from typing import Optional
 
@@ -27,49 +28,41 @@ class GaugeStationLoader:
     
     def load(self) -> gpd.GeoDataFrame:
         """
-        Load gauge stations from JSON file and convert to GeoDataFrame.
+        Load gauge stations from YAML file.
         
         Returns:
-            GeoDataFrame containing gauge stations with geometry
+            GeoDataFrame containing gauge stations
         """
         try:
-            # Load JSON file
             with open(self.gauge_file) as f:
-                gauge_data = json.load(f)
+                gauge_data = yaml.safe_load(f)
             
-            # Convert to DataFrame
-            gauges_df = pd.DataFrame(gauge_data)
-            
-            # Create geometry column from coordinates
-            geometry = gpd.points_from_xy(
-                gauges_df['lng'],
-                gauges_df['lat']
-            )
-            
-            # Rename id to station_id for consistency
-            gauges_df = gauges_df.rename(columns={
-                'id': 'station_id',
-                'name': 'station_name'
-            })
+            # Convert YAML structure to list of records
+            stations = []
+            for station_id, data in gauge_data['stations'].items():
+                stations.append({
+                    'station_id': station_id,
+                    'station_name': data['name'],
+                    'latitude': data['location']['lat'],
+                    'longitude': data['location']['lon']
+                })
             
             # Create GeoDataFrame
-            gauges_gdf = gpd.GeoDataFrame(
-                gauges_df,
-                geometry=geometry,
-                crs=f"EPSG:{WGS84_EPSG}"
+            df = pd.DataFrame(stations)
+            gdf = gpd.GeoDataFrame(
+                df,
+                geometry=gpd.points_from_xy(df.longitude, df.latitude),
+                crs="EPSG:4326"
             )
             
-            logger.info(f"Loaded {len(gauges_gdf)} gauge stations")
-            return gauges_gdf
+            logger.info(f"Loaded {len(gdf)} gauge stations")
+            return gdf
             
         except FileNotFoundError:
             logger.error(f"Gauge station file not found: {self.gauge_file}")
             raise
-        except json.JSONDecodeError:
-            logger.error(f"Invalid JSON in gauge station file: {self.gauge_file}")
-            raise
         except Exception as e:
-            logger.error(f"Error loading gauge stations: {str(e)}")
+            logger.error(f"Invalid YAML in gauge station file: {self.gauge_file}")
             raise
 
 class ReferencePointLoader:

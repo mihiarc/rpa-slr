@@ -1,0 +1,32 @@
+# NOAA API and Data Configuration
+
+api:
+  base_url: "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi"
+  requests_per_second: 2.0
+
+cache:
+  directory: "cache"
+  data_types:
+    - historical
+    - projected
+
+stations:
+  list_file: "data/tide-stations-list.yaml"
+  metadata:
+    min_weight_threshold: 0.01
+    max_search_distance: 200000  # meters
+    close_threshold: 1000  # meters for "very close" gauges
+
+data:
+  historical:
+    start_year: 1920
+    end_year: 2024
+  projected:
+    start_decade: 2020
+    end_decade: 2100
+    scenarios:
+      - low
+      - int_low
+      - intermediate
+      - int_high
+      - high 
