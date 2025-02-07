@@ -1,0 +1,49 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in Hawaii
+  coordinate_system: WGS84 (EPSG:4326)
+  region: Hawaii
+stations:
+  '1611400':
+    name: Nawiliwili
+    location:
+      lat: 21.9544
+      lon: -159.3561
+    island: Kauai
+  '1612340':
+    name: Honolulu
+    location:
+      lat: 21.303333
+      lon: -157.864528
+    island: Oahu
+  '1612401':
+    name: Pearl Harbor
+    location:
+      lat: 21.3675
+      lon: -157.963898
+    island: Oahu
+  '1612480':
+    name: Mokuoloe
+    location:
+      lat: 21.433056
+      lon: -157.79
+    island: Oahu
+  '1615680':
+    name: Kahului, Kahului Harbor
+    location:
+      lat: 20.895
+      lon: -156.469167
+    island: Maui
+  '1617433':
+    name: Kawaihae
+    location:
+      lat: 20.0366
+      lon: -155.8294
+    island: Hawaii
+  '1617760':
+    name: Hilo, Hilo Bay, Kuhio Bay
+    location:
+      lat: 19.73028
+      lon: -155.06
+    island: Hawaii 

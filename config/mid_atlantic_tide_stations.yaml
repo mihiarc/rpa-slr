@@ -1,0 +1,162 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in the Mid-Atlantic region
+  coordinate_system: WGS84 (EPSG:4326)
+  region: Mid Atlantic
+stations:
+  # New Jersey Coast
+  '8534720':
+    name: Atlantic City
+    location:
+      lat: 39.356667
+      lon: -74.418053
+    region: New Jersey Coast
+  '8536110':
+    name: Cape May
+    location:
+      lat: 38.9683
+      lon: -74.959999
+    region: New Jersey Coast
+
+  # Delaware Bay
+  '8537121':
+    name: Ship John Shoal
+    location:
+      lat: 39.305389
+      lon: -75.376678
+    region: Delaware Bay
+  '8539094':
+    name: Burlington, Delaware River
+    location:
+      lat: 40.081699
+      lon: -74.869698
+    region: Delaware Bay
+  '8540433':
+    name: Marcus Hook
+    location:
+      lat: 39.811806
+      lon: -75.4095
+    region: Delaware Bay
+  '8545240':
+    name: Philadelphia
+    location:
+      lat: 39.933056
+      lon: -75.141981
+    region: Delaware Bay
+  '8551762':
+    name: Delaware City
+    location:
+      lat: 39.582194
+      lon: -75.588972
+    region: Delaware Bay
+  '8551910':
+    name: Reedy Point
+    location:
+      lat: 39.558333
+      lon: -75.571944
+    region: Delaware Bay
+  '8555889':
+    name: Brandywine Shoal Light
+    location:
+      lat: 38.987
+      lon: -75.113
+    region: Delaware Bay
+  '8557380':
+    name: Lewes
+    location:
+      lat: 38.782833
+      lon: -75.119278
+    region: Delaware Bay
+
+  # Maryland Coast
+  '8570283':
+    name: Ocean City Inlet
+    location:
+      lat: 38.328267
+      lon: -75.091086
+    region: Maryland Coast
+
+  # Chesapeake Bay (Maryland)
+  '8571421':
+    name: Bishops Head
+    location:
+      lat: 38.22
+      lon: -76.038333
+    region: Upper Chesapeake
+  '8571892':
+    name: Cambridge
+    location:
+      lat: 38.5725
+      lon: -76.061667
+    region: Upper Chesapeake
+  '8573364':
+    name: Tolchester Beach
+    location:
+      lat: 39.213444
+      lon: -76.244556
+    region: Upper Chesapeake
+  '8574680':
+    name: Baltimore
+    location:
+      lat: 39.27
+      lon: -76.5783
+    region: Upper Chesapeake
+  '8575512':
+    name: Annapolis
+    location:
+      lat: 38.9833
+      lon: -76.4816
+    region: Upper Chesapeake
+  '8577330':
+    name: Solomons Island
+    location:
+      lat: 38.3167
+      lon: -76.451698
+    region: Upper Chesapeake
+
+  # Chesapeake Bay (Virginia)
+  '8632200':
+    name: Kiptopeke
+    location:
+      lat: 37.165278
+      lon: -75.988333
+    region: Lower Chesapeake
+  '8635750':
+    name: Lewisetta
+    location:
+      lat: 37.996389
+      lon: -76.465556
+    region: Lower Chesapeake
+  '8636580':
+    name: Windmill Point
+    location:
+      lat: 37.6155
+      lon: -76.289778
+    region: Lower Chesapeake
+  '8637689':
+    name: Yorktown USCG Training Center
+    location:
+      lat: 37.2265
+      lon: -76.478806
+    region: Lower Chesapeake
+  '8638610':
+    name: Sewells Point
+    location:
+      lat: 36.942778
+      lon: -76.328611
+    region: Lower Chesapeake
+  '8638901':
+    name: CBBT, Chesapeake Channel
+    location:
+      lat: 37.032902
+      lon: -76.083298
+    region: Lower Chesapeake
+
+  # Virginia Coast
+  '8631044':
+    name: Wachapreague
+    location:
+      lat: 37.607778
+      lon: -75.685833
+    region: Virginia Coast 

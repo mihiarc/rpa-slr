@@ -1,0 +1,36 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in the Pacific Islands (excluding Hawaii)
+  coordinate_system: WGS84 (EPSG:4326)
+  region: Pacific Islands
+stations:
+  # Guam
+  '1630000':
+    name: Apra Harbor, Guam
+    location:
+      lat: 13.443333
+      lon: 144.656667
+    region: Guam
+  '1631428':
+    name: Pago Bay, Guam
+    location:
+      lat: 13.426667
+      lon: 144.798333
+    region: Guam
+
+  # Northern Mariana Islands
+  '1632200':
+    name: Saipan, Northern Mariana Islands
+    location:
+      lat: 15.224167
+      lon: 145.738333
+    region: Northern Mariana Islands
+
+  # American Samoa
+  '1770000':
+    name: Pago Pago, American Samoa
+    location:
+      lat: -14.276667
+      lon: -170.689444
+    region: American Samoa 

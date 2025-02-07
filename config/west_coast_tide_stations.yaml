@@ -1,0 +1,150 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in the West Coast region
+  coordinate_system: WGS84 (EPSG:4326)
+  region: West Coast
+stations:
+  # California
+  '9410170':
+    name: San Diego
+    location:
+      lat: 32.714167
+      lon: -117.173611
+    region: California
+  '9410230':
+    name: La Jolla
+    location:
+      lat: 32.866944
+      lon: -117.257222
+    region: California
+  '9410660':
+    name: Los Angeles
+    location:
+      lat: 33.720833
+      lon: -118.272222
+    region: California
+  '9410840':
+    name: Santa Monica
+    location:
+      lat: 34.008333
+      lon: -118.5
+    region: California
+  '9411340':
+    name: Santa Barbara
+    location:
+      lat: 34.408333
+      lon: -119.685278
+    region: California
+  '9412110':
+    name: Port San Luis
+    location:
+      lat: 35.168889
+      lon: -120.754722
+    region: California
+  '9413450':
+    name: Monterey
+    location:
+      lat: 36.605
+      lon: -121.888333
+    region: California
+  '9414290':
+    name: San Francisco
+    location:
+      lat: 37.806389
+      lon: -122.465556
+    region: California
+  '9414750':
+    name: Alameda
+    location:
+      lat: 37.771389
+      lon: -122.299444
+    region: California
+  '9415020':
+    name: Point Reyes
+    location:
+      lat: 37.996667
+      lon: -122.975833
+    region: California
+  '9416841':
+    name: Arena Cove
+    location:
+      lat: 38.914722
+      lon: -123.708333
+    region: California
+  '9418767':
+    name: Crescent City
+    location:
+      lat: 41.745
+      lon: -124.183333
+    region: California
+
+  # Oregon
+  '9431647':
+    name: Port Orford
+    location:
+      lat: 42.739444
+      lon: -124.498333
+    region: Oregon
+  '9432780':
+    name: Charleston
+    location:
+      lat: 43.345
+      lon: -124.321944
+    region: Oregon
+  '9435380':
+    name: South Beach
+    location:
+      lat: 44.625556
+      lon: -124.043889
+    region: Oregon
+  '9437540':
+    name: Garibaldi
+    location:
+      lat: 45.555278
+      lon: -123.918889
+    region: Oregon
+  '9439040':
+    name: Astoria
+    location:
+      lat: 46.207222
+      lon: -123.768333
+    region: Oregon
+
+  # Washington
+  '9440910':
+    name: Toke Point
+    location:
+      lat: 46.708056
+      lon: -123.966944
+    region: Washington
+  '9443090':
+    name: Port Angeles
+    location:
+      lat: 48.125
+      lon: -123.44
+    region: Washington
+  '9444900':
+    name: Port Townsend
+    location:
+      lat: 48.1125
+      lon: -122.759722
+    region: Washington
+  '9447130':
+    name: Seattle
+    location:
+      lat: 47.602222
+      lon: -122.339167
+    region: Washington
+  '9449424':
+    name: Cherry Point
+    location:
+      lat: 48.863333
+      lon: -122.758333
+    region: Washington
+  '9449880':
+    name: Friday Harbor
+    location:
+      lat: 48.545556
+      lon: -123.013333
+    region: Washington 

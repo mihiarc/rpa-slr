@@ -1,0 +1,106 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in the North Atlantic region
+  coordinate_system: WGS84 (EPSG:4326)
+  region: North Atlantic
+stations:
+  # Maine
+  '8410140':
+    name: Eastport
+    location:
+      lat: 44.904598
+      lon: -66.982903
+    region: Maine
+  '8411060':
+    name: Cutler Farris Wharf
+    location:
+      lat: 44.6567
+      lon: -67.209999
+    region: Maine
+  '8413320':
+    name: Bar Harbor
+    location:
+      lat: 44.392194
+      lon: -68.204278
+    region: Maine
+  '8418150':
+    name: Portland
+    location:
+      lat: 43.65806
+      lon: -70.24417
+    region: Maine
+
+  # New Hampshire
+  '8419870':
+    name: Seavey Island
+    location:
+      lat: 43.07972
+      lon: -70.741
+    region: New Hampshire
+
+  # Massachusetts
+  '8443970':
+    name: Boston
+    location:
+      lat: 42.3539
+      lon: -71.05028
+    region: Massachusetts
+  '8447386':
+    name: Fall River
+    location:
+      lat: 41.7043
+      lon: -71.164101
+    region: Massachusetts
+  '8447435':
+    name: Chatham
+    location:
+      lat: 41.688499
+      lon: -69.9511
+    region: Massachusetts
+  '8447930':
+    name: Woods Hole
+    location:
+      lat: 41.523613
+      lon: -70.671112
+    region: Massachusetts
+  '8449130':
+    name: Nantucket Island
+    location:
+      lat: 41.285
+      lon: -70.096703
+    region: Massachusetts
+
+  # Rhode Island
+  '8452660':
+    name: Newport
+    location:
+      lat: 41.504333
+      lon: -71.326139
+    region: Rhode Island
+  '8454000':
+    name: Providence
+    location:
+      lat: 41.807167
+      lon: -71.400667
+    region: Rhode Island
+
+  # Connecticut
+  '8461490':
+    name: New London
+    location:
+      lat: 41.371667
+      lon: -72.095556
+    region: Connecticut
+  '8465705':
+    name: New Haven
+    location:
+      lat: 41.283333
+      lon: -72.908333
+    region: Connecticut
+  '8467150':
+    name: Bridgeport
+    location:
+      lat: 41.175819
+      lon: -73.183969
+    region: Connecticut 

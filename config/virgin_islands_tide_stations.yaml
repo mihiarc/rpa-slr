@@ -1,0 +1,40 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in the US Virgin Islands
+  coordinate_system: WGS84 (EPSG:4326)
+  region: US Virgin Islands
+stations:
+  # St. Thomas
+  '9751309':
+    name: Water Bay, St. Thomas
+    location:
+      lat: 18.318889
+      lon: -64.863611
+    region: St. Thomas
+  '9751364':
+    name: Charlotte Amalie, St. Thomas
+    location:
+      lat: 18.335833
+      lon: -64.920556
+    region: St. Thomas
+  '9751381':
+    name: Lameshur Bay, St. John
+    location:
+      lat: 18.318333
+      lon: -64.724167
+    region: St. John
+  
+  # St. Croix
+  '9751401':
+    name: Christiansted Harbor, St. Croix
+    location:
+      lat: 17.749722
+      lon: -64.698333
+    region: St. Croix
+  '9751639':
+    name: Limetree Bay, St. Croix
+    location:
+      lat: 17.694722
+      lon: -64.753889
+    region: St. Croix 

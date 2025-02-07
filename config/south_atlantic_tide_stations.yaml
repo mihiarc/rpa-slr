@@ -1,0 +1,98 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in the South Atlantic region
+  coordinate_system: WGS84 (EPSG:4326)
+  region: South Atlantic
+stations:
+  # North Carolina
+  '8651370':
+    name: Duck
+    location:
+      lat: 36.1833
+      lon: -75.746696
+    region: North Carolina
+  '8652587':
+    name: Oregon Inlet Marina
+    location:
+      lat: 35.795694
+      lon: -75.548194
+    region: North Carolina
+  '8654467':
+    name: USCG Station Hatteras
+    location:
+      lat: 35.208611
+      lon: -75.704194
+    region: North Carolina
+  '8656483':
+    name: Beaufort, Duke Marine Lab
+    location:
+      lat: 34.7175
+      lon: -76.671111
+    region: North Carolina
+  '8658120':
+    name: Wilmington
+    location:
+      lat: 34.2275
+      lon: -77.953611
+    region: North Carolina
+
+  # South Carolina
+  '8661070':
+    name: Springmaid Pier
+    location:
+      lat: 33.654999
+      lon: -78.918297
+    region: South Carolina
+  '8665530':
+    name: Charleston
+    location:
+      lat: 32.775
+      lon: -79.923889
+    region: South Carolina
+
+  # Georgia
+  '8670870':
+    name: Fort Pulaski
+    location:
+      lat: 32.034694
+      lon: -80.903028
+    region: Georgia
+  '8679598':
+    name: Kings Bay MSF Pier
+    location:
+      lat: 30.778099
+      lon: -81.491402
+    region: Georgia
+
+  # Florida (Atlantic Coast)
+  '8720030':
+    name: Fernandina Beach
+    location:
+      lat: 30.671356
+      lon: -81.465842
+    region: Florida Atlantic
+  '8720218':
+    name: Mayport
+    location:
+      lat: 30.398167
+      lon: -81.427889
+    region: Florida Atlantic
+  '8721604':
+    name: Trident Pier, Port Canaveral
+    location:
+      lat: 28.415833
+      lon: -80.593056
+    region: Florida Atlantic
+  '8722670':
+    name: Lake Worth Pier
+    location:
+      lat: 26.612778
+      lon: -80.034167
+    region: Florida Atlantic
+  '8723214':
+    name: Virginia Key
+    location:
+      lat: 25.731667
+      lon: -80.161667
+    region: Florida Atlantic 

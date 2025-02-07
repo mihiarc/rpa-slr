@@ -1,0 +1,96 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in Puerto Rico
+  coordinate_system: WGS84 (EPSG:4326)
+  region: Puerto Rico
+stations:
+  # Eastern Region (Culebra and Vieques)
+  '9752235':
+    name: Culebra
+    location:
+      lat: 18.300861
+      lon: -65.302472
+    region: East
+  '9752621':
+    name: Isabel Segunda, Vieques Island
+    location:
+      lat: 18.152528
+      lon: -65.443806
+    region: East
+  '9752695':
+    name: Esperanza, Vieques Island
+    location:
+      lat: 18.093861
+      lon: -65.471361
+    region: East
+  
+  # Eastern Main Island
+  '9753216':
+    name: Fajardo
+    location:
+      lat: 18.335278
+      lon: -65.631111
+    region: East
+  '9754229':
+    name: Yabucoa Harbor
+    location:
+      lat: 18.055083
+      lon: -65.833000
+    region: East
+  
+  # Northern Coast
+  '9755371':
+    name: San Juan, La Puntilla, San Juan Bay
+    location:
+      lat: 18.458944
+      lon: -66.116417
+    region: North
+  '9757811':
+    name: Arecibo
+    location:
+      lat: 18.480528
+      lon: -66.702361
+    region: North
+  
+  # Southern Coast
+  '9755968':
+    name: Salinas, Bahia de Jobos
+    location:
+      lat: 17.949083
+      lon: -66.225944
+    region: South
+  '9758066':
+    name: Guayanilla, Bahia de Guayanilla
+    location:
+      lat: 18.005861
+      lon: -66.766611
+    region: South
+  '9759110':
+    name: Magueyes Island
+    location:
+      lat: 17.970100
+      lon: -67.046390
+    region: South
+  
+  # Western Coast
+  '9759394':
+    name: Mayaguez
+    location:
+      lat: 18.218833
+      lon: -67.162444
+    region: West
+  '9759413':
+    name: Aguadilla, Crashboat Beach
+    location:
+      lat: 18.456639
+      lon: -67.164583
+    region: West
+  
+  # Offshore Islands
+  '9759938':
+    name: Mona Island
+    location:
+      lat: 18.089289
+      lon: -67.938208
+    region: Offshore 

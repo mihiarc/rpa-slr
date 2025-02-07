@@ -1,0 +1,116 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in Alaska
+  coordinate_system: WGS84 (EPSG:4326)
+  region: Alaska
+stations:
+  # Southeast Alaska
+  '9451054':
+    name: Sitka
+    location:
+      lat: 57.051667
+      lon: -135.341667
+    region: Southeast Alaska
+  '9451600':
+    name: Juneau
+    location:
+      lat: 58.298333
+      lon: -134.411667
+    region: Southeast Alaska
+  '9452210':
+    name: Skagway
+    location:
+      lat: 59.450556
+      lon: -135.328056
+    region: Southeast Alaska
+  '9452400':
+    name: Yakutat
+    location:
+      lat: 59.548333
+      lon: -139.733333
+    region: Southeast Alaska
+  '9450460':
+    name: Ketchikan
+    location:
+      lat: 55.331667
+      lon: -131.626667
+    region: Southeast Alaska
+
+  # South Central Alaska
+  '9454050':
+    name: Cordova
+    location:
+      lat: 60.558333
+      lon: -145.753333
+    region: South Central Alaska
+  '9455090':
+    name: Valdez
+    location:
+      lat: 61.124167
+      lon: -146.362778
+    region: South Central Alaska
+  '9455500':
+    name: Seward
+    location:
+      lat: 60.119722
+      lon: -149.426667
+    region: South Central Alaska
+  '9455760':
+    name: Seldovia
+    location:
+      lat: 59.440278
+      lon: -151.720000
+    region: South Central Alaska
+  '9455920':
+    name: Anchorage
+    location:
+      lat: 61.237778
+      lon: -149.890000
+    region: South Central Alaska
+  '9457292':
+    name: Kodiak Island
+    location:
+      lat: 57.731667
+      lon: -152.513333
+    region: South Central Alaska
+
+  # Western Alaska
+  '9459450':
+    name: Sand Point
+    location:
+      lat: 55.337222
+      lon: -160.502222
+    region: Western Alaska
+  '9461380':
+    name: Adak Island
+    location:
+      lat: 51.863333
+      lon: -176.632222
+    region: Western Alaska
+  '9462620':
+    name: Unalaska
+    location:
+      lat: 53.880000
+      lon: -166.537778
+    region: Western Alaska
+  '9463502':
+    name: Port Moller
+    location:
+      lat: 55.989722
+      lon: -160.561944
+    region: Western Alaska
+
+  # Northern Alaska
+  '9468756':
+    name: Prudhoe Bay
+    location:
+      lat: 70.411389
+      lon: -148.531944
+    region: Northern Alaska
+  '9497645':
+    name: Nome
+    location:
+      lat: 64.495833
+      lon: -165.441667
+    region: Northern Alaska 
