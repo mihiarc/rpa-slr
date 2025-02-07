@@ -27,16 +27,8 @@ TIDE_STATIONS_LIST = CONFIG_DIR / "tide-stations-list.yaml"
 ALBERS_CRS = "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
 WGS84_EPSG = 4326
 
-# Distance thresholds (in meters)
+# Point spacing for reference points (in meters)
 POINT_SPACING = 5000  # 5km spacing between coastal reference points
-CLOSE_THRESHOLD = NOAA_SETTINGS['stations']['metadata']['close_threshold']  # 1km threshold for "very close" gauges
-INITIAL_SEARCH_DISTANCE = 50000  # 50km initial search radius
-MAX_SEARCH_DISTANCE = NOAA_SETTINGS['stations']['metadata']['max_search_distance']  # 200km maximum search radius
-DISTANCE_INCREMENT = 25000  # 25km increments for expanding search
-
-# Gauge association parameters
-MAX_GAUGES_PER_POINT = 3  # Maximum number of gauges to associate with each point
-MIN_WEIGHT_THRESHOLD = NOAA_SETTINGS['stations']['metadata']['min_weight_threshold']  # Minimum weight to consider a gauge relevant
 
 # Ensure directories exist
 def ensure_directories():

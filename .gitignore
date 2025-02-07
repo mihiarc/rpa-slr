@@ -11,3 +11,10 @@ data/
 .DS_Store
 __pycache__/
 *.pyc
+__pycache__/
+*.py[cod]
+*.class
+*.log
+output/imputation/logs/
+src/noaa/cache/
+.DS_Store

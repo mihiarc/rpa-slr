@@ -14,13 +14,13 @@ It is needed because:
 
 3. Gauge Station Association:
    - Associates multiple gauge stations with each reference point
+    - some reference points may not nearby gauges or have HTF data
    - Enables interpolation/averaging of water levels between stations
    - Handles cases where closest station may have missing data
 
 The module is a key component for:
-- Preprocessing spatial relationships between reference points and gauge stations
+- Preprocessing spatial relationships between coastline reference points and tide gauge stations
 - Supporting later water level interpolation and imputation
-- Ensuring accurate distance-based weighting in spatial analyses
 
 """
 
@@ -72,22 +72,15 @@ class NearestGaugeFinder:
     
     def find_nearest(self,
                     reference_points: gpd.GeoDataFrame,
-                    gauge_stations: gpd.GeoDataFrame,
-                    k: int = 3,
-                    initial_max_distance: float = 50000,
-                    max_distance_limit: float = 200000,
-                    distance_increment: float = 25000
-                    ) -> List[dict]:
+                    gauge_stations: gpd.GeoDataFrame) -> List[dict]:
         """
-        Find k nearest gauge stations for each reference point using adaptive distance thresholds.
+        Find nearest gauge stations for each reference point.
+        Gets 4 nearest initially to allow for fallbacks if some don't have HTF data.
+        Will return data for 2 nearest gauges that have HTF data.
         
         Args:
             reference_points: GeoDataFrame of reference points
             gauge_stations: GeoDataFrame of gauge stations
-            k: Number of nearest gauges to find
-            initial_max_distance: Initial maximum distance to consider (meters)
-            max_distance_limit: Absolute maximum distance limit (meters)
-            distance_increment: Distance increment for adaptive threshold (meters)
             
         Returns:
             List of dictionaries containing point data and nearest gauge information
@@ -107,8 +100,9 @@ class NearestGaugeFinder:
         # Build KDTree for efficient search
         tree = cKDTree(gauge_coords)
         
-        # Track counties needing extended search
-        counties_with_extended_distance = set()
+        # Find 4 nearest gauges for each point (to allow for fallbacks)
+        distances, indices = tree.query(ref_coords, k=4)
+        
         gauge_data = []
         
         # Process each reference point
@@ -120,59 +114,18 @@ class NearestGaugeFinder:
                 'geometry': reference_points.iloc[i].geometry
             }
             
-            # Use adaptive distance threshold
-            current_max_distance = initial_max_distance
-            has_gauge = False
+            # Store all 4 gauge options with their IDs and distances
+            backup_gauge_ids = []
+            backup_distances = []
             
-            while not has_gauge and current_max_distance <= max_distance_limit:
-                # Query KDTree
-                distances, indices = tree.query(
-                    ref_coords[i:i+1],
-                    k=k,
-                    distance_upper_bound=current_max_distance
-                )
-                
-                # Process results
-                distances = distances[0]
-                indices = indices[0]
-                valid_mask = distances < current_max_distance
-                valid_distances = distances[valid_mask]
-                valid_indices = indices[valid_mask]
-                
-                if len(valid_distances) > 0:
-                    has_gauge = True
-                    
-                    # Log if distance was extended
-                    if current_max_distance > initial_max_distance:
-                        counties_with_extended_distance.add(
-                            (point_data['county_fips'], point_data['county_name'])
-                        )
-                    
-                    # Store gauge information
-                    for j, (idx, dist) in enumerate(zip(valid_indices, valid_distances)):
-                        gauge = gauge_stations.iloc[idx]
-                        point_data.update({
-                            f'gauge_id_{j+1}': gauge['station_id'],
-                            f'gauge_name_{j+1}': gauge['station_name'],
-                            f'distance_{j+1}': dist,
-                        })
-                else:
-                    current_max_distance += distance_increment
+            for j in range(4):
+                gauge = gauge_stations.iloc[indices[i, j]]
+                backup_gauge_ids.append(gauge['station_id'])
+                backup_distances.append(distances[i, j])
             
-            # Fill missing gauge slots
-            for j in range(len(valid_distances) if has_gauge else 0, k):
-                point_data.update({
-                    f'gauge_id_{j+1}': None,
-                    f'gauge_name_{j+1}': None,
-                    f'distance_{j+1}': None,
-                })
+            point_data['backup_gauge_ids'] = backup_gauge_ids
+            point_data['backup_distances'] = backup_distances
             
             gauge_data.append(point_data)
-        
-        # Log counties that required extended distance
-        if counties_with_extended_distance:
-            logger.warning("\nCounties requiring extended gauge search distance:")
-            for county_fips, county_name in sorted(counties_with_extended_distance):
-                logger.warning(f"  - {county_name} (FIPS: {county_fips})")
         
         return gauge_data 

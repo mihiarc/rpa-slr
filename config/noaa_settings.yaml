@@ -13,9 +13,11 @@ cache:
 stations:
   list_file: "data/tide-stations-list.yaml"
   metadata:
-    min_weight_threshold: 0.01
-    max_search_distance: 200000  # meters
-    close_threshold: 1000  # meters for "very close" gauges
+    description: "Configuration for NOAA tide gauge stations"
+    source: "NOAA Tides and Currents"
+    last_updated: "2024-01-01"
+    data_url: "https://tidesandcurrents.noaa.gov/api/datagetter"
+    documentation_url: "https://tidesandcurrents.noaa.gov/api/"
 
 data:
   historical:

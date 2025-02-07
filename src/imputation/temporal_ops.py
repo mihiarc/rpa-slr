@@ -22,22 +22,16 @@ class WaterLevelProcessor:
     
     def __init__(self,
                  imputation_structure_file: Path,
-                 output_dir: Path,
-                 min_weight_threshold: float = 0.01,
-                 min_gauges_required: int = 1):
+                 output_dir: Path):
         """
         Initialize water level processor.
         
         Args:
             imputation_structure_file: Path to imputation structure from spatial phase
             output_dir: Directory for output files
-            min_weight_threshold: Minimum weight to consider a gauge's influence
-            min_gauges_required: Minimum gauges needed for valid imputation
         """
         self.imputation_structure_file = imputation_structure_file
         self.output_dir = output_dir
-        self.min_weight_threshold = min_weight_threshold
-        self.min_gauges_required = min_gauges_required
         
         # Load imputation structure
         self.imputation_df = pd.read_parquet(imputation_structure_file)
@@ -69,70 +63,46 @@ class WaterLevelProcessor:
                                point_data: pd.Series,
                                available_gauges: set) -> bool:
         """
-        Check if a reference point has sufficient gauge coverage.
+        Validate that both required gauges are available for a point.
         
         Args:
-            point_data: Series containing point's gauge associations
-            available_gauges: Set of gauge IDs with available data
+            point_data: Series containing point data
+            available_gauges: Set of available gauge IDs
             
         Returns:
-            Boolean indicating if point has sufficient coverage
+            True if both gauges are available, False otherwise
         """
-        valid_gauges = 0
-        total_weight = 0
-        
-        # Check each associated gauge
-        for i in range(1, 4):  # Up to 3 gauges
-            gauge_id = point_data.get(f'gauge_id_{i}')
-            weight = point_data.get(f'weight_{i}', 0)
-            
-            if (gauge_id in available_gauges and 
-                weight >= self.min_weight_threshold):
-                valid_gauges += 1
-                total_weight += weight
-        
-        return (valid_gauges >= self.min_gauges_required and 
-                total_weight > 0.5)  # At least 50% weight coverage
+        return (point_data['gauge_id_1'] in available_gauges and 
+                point_data['gauge_id_2'] in available_gauges)
     
     def _impute_point_water_level(self,
-                                 point_data: pd.Series,
-                                 gauge_levels: pd.DataFrame,
-                                 time_index: pd.DatetimeIndex) -> pd.Series:
+                                point_data: pd.Series,
+                                gauge_levels: pd.DataFrame,
+                                time_index: pd.DatetimeIndex) -> pd.Series:
         """
-        Impute water levels for a single reference point.
+        Impute water levels for a single point using weighted gauge data.
         
         Args:
-            point_data: Series containing point's gauge associations
+            point_data: Series containing point data and weights
             gauge_levels: DataFrame of gauge water levels
-            time_index: DatetimeIndex for output
+            time_index: Time index for output series
             
         Returns:
-            Series of imputed water levels indexed by time
+            Series of imputed water levels
         """
-        # Initialize arrays
-        weights = []
-        levels = []
-        
-        # Collect valid gauge data
-        for i in range(1, 4):  # Up to 3 gauges
-            gauge_id = point_data.get(f'gauge_id_{i}')
-            weight = point_data.get(f'weight_{i}', 0)
-            
-            if (gauge_id in gauge_levels.columns and 
-                weight >= self.min_weight_threshold):
-                weights.append(weight)
-                levels.append(gauge_levels[gauge_id])
-        
-        if not weights:
-            return pd.Series(index=time_index, dtype=float)
-        
-        # Normalize weights
-        weights = np.array(weights) / sum(weights)
+        # Get gauge IDs and weights
+        gauge1 = point_data['gauge_id_1']
+        gauge2 = point_data['gauge_id_2']
+        weight1 = point_data['weight_1']
+        weight2 = point_data['weight_2']
         
         # Calculate weighted average
-        imputed_levels = sum(w * l for w, l in zip(weights, levels))
+        water_levels = (
+            gauge_levels[gauge1] * weight1 +
+            gauge_levels[gauge2] * weight2
+        )
         
-        return pd.Series(imputed_levels, index=time_index)
+        return water_levels
     
     def process_water_levels(self,
                            gauge_data_dir: Path,
@@ -183,11 +153,11 @@ class WaterLevelProcessor:
                     'water_levels': water_levels
                 })
         
-        # Create output DataFrame
+        # Convert results to DataFrame
         result_df = pd.DataFrame(results)
         
         # Save results
-        result_df.to_parquet(output_file, compression='snappy')
-        logger.info(f"Saved water levels to {output_file}")
+        result_df.to_parquet(output_file)
+        logger.info(f"Saved results to {output_file}")
         
         return output_file 

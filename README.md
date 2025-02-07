@@ -50,20 +50,20 @@ graph TD
         H --> I
         F --> I
         
-        I --> J[assignment.py]
-        J --> K[calculate_historical_county_htf]
-        J --> L[calculate_projected_county_htf]
+        I --> J[spatial_ops.py]
+        J --> K[weight_calculator.py]
+        K --> L[imputation_structure.parquet]
     end
 
-    subgraph Output Generation
-        K --> M[historical_county_htf.csv/parquet]
-        L --> N[projected_county_htf.csv/parquet]
+    subgraph Analysis & Reporting
+        L --> M[generate_report.py]
+        M --> N[imputation_report.md]
+        M --> O[distance_distribution.png]
+        M --> P[weight_distribution.png]
         
-        M --> O[Visualization & Analysis]
-        N --> O
-        
-        O --> P[HTF Analysis Report]
-        O --> Q[Data Visualizations]
+        L --> Q[assignment.py]
+        Q --> R[historical_county_htf.csv/parquet]
+        Q --> S[projected_county_htf.csv/parquet]
     end
 ```
 
@@ -158,11 +158,23 @@ This will:
 │       ├── projected_htf/       # Input projected data
 │       └── imputed_gauge_county_mapping.parquet
 ├── src/
+│   ├── imputation/
+│   │   ├── __init__.py
+│   │   ├── main.py             # Main imputation pipeline
+│   │   ├── data_loader.py      # Data loading utilities
+│   │   ├── spatial_ops.py      # Spatial operations and gauge finding
+│   │   ├── weight_calculator.py # Weight calculation for gauges
+│   │   └── generate_report.py  # Report generation module
 │   └── county_htf/
 │       ├── __init__.py
-│       ├── main.py             # Main processing pipeline
+│       ├── main.py             # County HTF processing pipeline
 │       ├── data_loader.py      # Data loading utilities
 │       └── assignment.py       # Core processing logic
+├── output/
+│   └── imputation/
+│       ├── imputation_report.md     # Analysis report
+│       ├── distance_distribution.png # Distance visualization
+│       └── weight_distribution.png   # Weight visualization
 └── README.md
 ```
 

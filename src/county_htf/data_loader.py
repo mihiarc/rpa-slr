@@ -6,6 +6,7 @@ import pandas as pd
 from pathlib import Path
 from typing import Tuple, Dict
 import logging
+import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 def load_gauge_county_mapping(filepath: str | Path) -> pd.DataFrame:
     """
     Load the gauge-to-county mapping structure with weights.
+    Counties without gauge data will still be included.
     
     Args:
         filepath: Path to the mapping parquet file
@@ -24,15 +26,25 @@ def load_gauge_county_mapping(filepath: str | Path) -> pd.DataFrame:
     logger.info(f"Loading gauge-county mapping from {filepath}")
     df = pd.read_parquet(filepath)
     
+    # Only require essential county identification columns
     required_columns = [
-        'county_fips', 'county_name', 'state_fips', 'geometry',
-        'gauge_id_1', 'gauge_name_1', 'distance_1', 'weight_1',
-        'n_gauges', 'total_weight'
+        'county_fips', 'county_name', 'state_fips', 'geometry'
     ]
     
     missing_cols = [col for col in required_columns if col not in df.columns]
     if missing_cols:
         raise ValueError(f"Missing required columns in mapping file: {missing_cols}")
+    
+    # Ensure gauge columns exist, even if empty
+    gauge_columns = [
+        'gauge_id_1', 'gauge_name_1', 'distance_1', 'weight_1',
+        'gauge_id_2', 'gauge_name_2', 'distance_2', 'weight_2',
+        'gauge_id_3', 'gauge_name_3', 'distance_3', 'weight_3'
+    ]
+    
+    for col in gauge_columns:
+        if col not in df.columns:
+            df[col] = np.nan
     
     logger.info(f"Loaded mapping with {len(df)} records covering {df['county_fips'].nunique()} counties")
     return df
@@ -133,14 +145,15 @@ def load_htf_data(historical_path: str | Path, projected_path: str | Path) -> Tu
 
 def validate_gauge_coverage(mapping_df: pd.DataFrame, htf_df: pd.DataFrame, dataset_name: str) -> None:
     """
-    Validate that all gauges in the mapping have corresponding HTF data.
+    Validate gauge coverage by checking which gauges in the mapping have HTF data.
+    Warns about missing data but does not filter out counties.
     
     Args:
-        mapping_df: Gauge-county mapping DataFrame
-        htf_df: HTF data DataFrame
-        dataset_name: Name of the dataset being validated ('historical' or 'projected')
+        mapping_df: DataFrame containing gauge-county mapping
+        htf_df: DataFrame containing HTF data
+        dataset_name: Name of the dataset (for logging)
     """
-    # Get all unique gauge IDs from mapping (excluding missing values)
+    # Get all gauges from mapping
     mapping_gauges = set()
     for i in range(1, 4):
         gauge_col = f'gauge_id_{i}'
@@ -148,11 +161,12 @@ def validate_gauge_coverage(mapping_df: pd.DataFrame, htf_df: pd.DataFrame, data
             gauges = mapping_df[gauge_col].dropna().unique()
             mapping_gauges.update(gauges)
     
+    # Check which gauges have HTF data
     htf_gauges = set(htf_df['station_id'].unique())
     missing_gauges = mapping_gauges - htf_gauges
     
     if missing_gauges:
         logger.warning(
             f"Found {len(missing_gauges)} gauges in mapping without {dataset_name} HTF data: "
-            f"{sorted(missing_gauges)[:5]}{'...' if len(missing_gauges) > 5 else ''}"
+            f"{sorted(list(missing_gauges))[:5]}..."
         ) 

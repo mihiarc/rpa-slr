@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Optional, Dict
 import pandas as pd
 from datetime import datetime
+import shapely.wkb
 
 from .data_loader import (
     load_gauge_county_mapping,
@@ -140,13 +141,18 @@ def generate_data_dictionary(df: pd.DataFrame, name: str, description: str) -> s
     
     return "\n".join(lines)
 
-def save_results(df: pd.DataFrame, base_path: Path, name: str, description: str) -> None:
+def save_results(
+    df: pd.DataFrame,
+    base_path: Path,
+    name: str,
+    description: str
+) -> None:
     """
-    Save results in both Parquet and CSV formats with data dictionary.
+    Save results in both parquet and CSV formats, along with a data dictionary.
     
     Args:
         df: DataFrame to save
-        base_path: Base output directory
+        base_path: Base directory for output
         name: Base name for the output files
         description: Description of the dataset for the data dictionary
     """
@@ -164,7 +170,14 @@ def save_results(df: pd.DataFrame, base_path: Path, name: str, description: str)
     # For CSV output, we'll convert geometry to WKT string if present
     if 'geometry' in df.columns:
         df = df.copy()
-        df['geometry'] = df['geometry'].astype(str)
+        # Handle both bytes and shapely geometry objects
+        df['geometry'] = df['geometry'].apply(
+            lambda geom: (
+                shapely.wkb.loads(geom).wkt if isinstance(geom, bytes)
+                else geom.wkt if geom is not None
+                else None
+            )
+        )
     
     df.to_csv(csv_path, index=False)
     
@@ -178,6 +191,35 @@ def save_results(df: pd.DataFrame, base_path: Path, name: str, description: str)
     logger.info(f"  - CSV: {csv_path}")
     logger.info(f"  - Data Dictionary: {dict_path}")
 
+def generate_county_list(df: pd.DataFrame, output_path: Path) -> None:
+    """
+    Generate a markdown file listing all unique counties in the dataset.
+    
+    Args:
+        df: DataFrame containing county information
+        output_path: Path to save the markdown file
+    """
+    # Get unique counties with their information
+    counties = df[['county_fips', 'county_name', 'state_fips']].drop_duplicates().sort_values('county_fips')
+    
+    # Generate markdown content
+    lines = [
+        "# Counties Included in HTF Analysis",
+        "",
+        f"Total number of counties: {len(counties)}",
+        "",
+        "| FIPS Code | County Name | State FIPS |",
+        "|-----------|-------------|------------|"
+    ]
+    
+    # Add each county
+    for _, county in counties.iterrows():
+        lines.append(f"| {county['county_fips']} | {county['county_name']} | {county['state_fips']} |")
+    
+    # Write to file
+    output_path.write_text("\n".join(lines))
+    logger.info(f"Generated county list at {output_path}")
+
 def process_htf_dataset(
     mapping_path: str | Path,
     historical_htf_path: str | Path,
@@ -186,6 +228,7 @@ def process_htf_dataset(
 ) -> None:
     """
     Process both historical and projected HTF datasets to create county-level data.
+    Uses checkpointing to save intermediate results.
     
     Args:
         mapping_path: Path to the gauge-county mapping file
@@ -194,9 +237,16 @@ def process_htf_dataset(
         output_dir: Directory to save output files
     """
     logger.info("Starting HTF data processing pipeline")
+    output_dir = Path(output_dir)
+    checkpoint_dir = output_dir / "checkpoints"
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
     
     # Load mapping data
     mapping_df = load_gauge_county_mapping(mapping_path)
+    
+    # Generate county list from mapping data
+    county_list_path = output_dir / "county_list.md"
+    generate_county_list(mapping_df, county_list_path)
     
     # Load HTF data
     historical_df, projected_df = load_htf_data(historical_htf_path, projected_htf_path)
@@ -205,43 +255,71 @@ def process_htf_dataset(
     validate_gauge_coverage(mapping_df, historical_df, 'historical')
     validate_gauge_coverage(mapping_df, projected_df, 'projected')
     
-    # Process historical data
-    logger.info("Processing historical HTF data")
-    historical_county_htf = calculate_historical_county_htf(
-        historical_df,
-        mapping_df
-    )
+    # Process historical data with checkpoint
+    historical_checkpoint = checkpoint_dir / "historical_county_htf.parquet"
+    if historical_checkpoint.exists():
+        logger.info("Loading historical data from checkpoint")
+        historical_county_htf = pd.read_parquet(historical_checkpoint)
+    else:
+        logger.info("Processing historical HTF data")
+        historical_county_htf = calculate_historical_county_htf(
+            historical_df,
+            mapping_df
+        )
+        # Save checkpoint
+        logger.info("Saving historical data checkpoint")
+        historical_county_htf.to_parquet(historical_checkpoint)
     
-    # Process projected data
-    logger.info("Processing projected HTF data")
-    projected_county_htf = calculate_projected_county_htf(
-        projected_df,
-        mapping_df
-    )
+    # Process projected data with checkpoint
+    projected_checkpoint = checkpoint_dir / "projected_county_htf.parquet"
+    if projected_checkpoint.exists():
+        logger.info("Loading projected data from checkpoint")
+        projected_county_htf = pd.read_parquet(projected_checkpoint)
+    else:
+        logger.info("Processing projected HTF data")
+        projected_county_htf = calculate_projected_county_htf(
+            projected_df,
+            mapping_df
+        )
+        # Save checkpoint
+        logger.info("Saving projected data checkpoint")
+        projected_county_htf.to_parquet(projected_checkpoint)
     
-    # Create output directory
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Create final output directory
+    final_output_dir = output_dir / "final"
+    final_output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Save results in both formats with data dictionaries
-    save_results(
-        historical_county_htf,
-        output_dir,
-        "historical_county_htf",
-        "Historical high tide flooding data aggregated to county level from NOAA tide gauge observations."
-    )
-    save_results(
-        projected_county_htf,
-        output_dir,
-        "projected_county_htf",
-        "Projected future high tide flooding data aggregated to county level from NOAA tide gauge projections."
-    )
-    
-    logger.info(
-        f"Processed {historical_county_htf['county_fips'].nunique()} counties "
-        f"for historical data and {projected_county_htf['county_fips'].nunique()} "
-        f"counties for projected data"
-    )
+    try:
+        # Save final results in both formats with data dictionaries
+        save_results(
+            historical_county_htf,
+            final_output_dir,
+            "historical_county_htf",
+            "Historical high tide flooding data aggregated to county level from NOAA tide gauge observations."
+        )
+        save_results(
+            projected_county_htf,
+            final_output_dir,
+            "projected_county_htf",
+            "Projected future high tide flooding data aggregated to county level from NOAA tide gauge projections."
+        )
+        
+        logger.info(
+            f"Processed {historical_county_htf['county_fips'].nunique()} counties "
+            f"for historical data and {projected_county_htf['county_fips'].nunique()} "
+            f"counties for projected data"
+        )
+        
+        # If everything succeeded, we can optionally clean up checkpoints
+        # Uncomment these lines if you want to automatically remove checkpoints after success
+        # historical_checkpoint.unlink()
+        # projected_checkpoint.unlink()
+        # checkpoint_dir.rmdir()
+        
+    except Exception as e:
+        logger.error(f"Error saving final results: {str(e)}")
+        logger.info("Intermediate results are still available in the checkpoints directory")
+        raise
 
 if __name__ == "__main__":
     # Configure logging
