@@ -6,47 +6,32 @@ A Python package for retrieving and processing NOAA high tide flooding (HTF) dat
 
 - **Historical Data Processing**
   - Fetch historical high tide flooding data from NOAA
-  - Process data by region with quality control checks
-  - Aggregate data at county/regional level
-  - Export processed data in CSV or Parquet format
+  - Process data by region
+    - regions define in `config/region_mappings.yaml`
+    - each region has its own tide stations defined in `config/{region}_tide_stations.yaml`
+  - Imputation module matches tide stations to reference points along the coast of each county
+  - Assignment module assigns annual flood days to each county based on imputation module results
+  - Outputs annual flood days by county in CSV
 
 - **Projected Data Processing**
   - Fetch projected high tide flooding data from NOAA
   - Process projections by region and scenario
-  - Support for multiple climate scenarios
-  - Export processed data in CSV or Parquet format
-
-- **Data Quality Analysis**
-  - Comprehensive data quality assessment
-  - Temporal coverage analysis
-  - Data completeness checks
-  - Quality issue identification
-  - Anomaly detection
-  - Cross-station issue detection
-  - Statistical summaries
-  - Export analysis in JSON or human-readable format
-
-- **Core Infrastructure**
-  - Efficient API client with rate limiting
-  - Robust caching system
-  - Configurable by region and data type
-  - Error handling and logging
+    - regions define in `config/region_mappings.yaml`
+    - each region has its own tide stations defined in `config/{region}_tide_stations.yaml`
+    - scenarios define in `config/scenario_mappings.yaml`
+  - Imputation module matches tide stations to reference points along the coast of each county
+  - Assignment module assigns projected flood days to each county based on imputation module results
+  - Outputs projected flood days by county in CSV
 
 ## Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/county_level_tidal_flooding.git
-cd county_level_tidal_flooding
-```
-
-2. Create a virtual environment (optional but recommended):
+1. Create a virtual environment:
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install the package:
+2. Install the package:
 ```bash
 # For users
 pip install .
@@ -54,11 +39,6 @@ pip install .
 # For developers
 pip install -e .[dev]
 ```
-
-After installation, the following commands become available:
-- `htf-historical`: Process historical HTF data
-- `htf-projected`: Process projected HTF data
-- `htf-analyze`: Run data quality analysis
 
 ## Requirements
 
@@ -82,8 +62,8 @@ Development dependencies (installed with `.[dev]`):
 
 The package uses YAML configuration files located in the `config` directory:
 
-- `noaa_settings.yaml`: NOAA API settings and data type configurations
-- `fips_mappings.yaml`: Region and county FIPS code mappings
+- `noaa_api_settings.yaml`: NOAA API settings and data type configurations
+- `region_mappings.yaml`: Region mappings
 - `{region}_tide_stations.yaml`: Region-specific tide station configurations
 
 ### Regional Configurations
@@ -114,9 +94,9 @@ Process historical HTF data for a specific region:
 
 ```bash
 python -m noaa.historical.historical_htf_cli \
-    --region alaska \
-    --start-year 2000 \
-    --end-year 2022 \
+    --region gulf_coast \
+    --start-year 1920 \
+    --end-year 2024 \
     --output-dir output/historical \
     --format parquet
 ```
@@ -140,58 +120,40 @@ Analyze data quality for a specific region or station:
 
 ```bash
 # Analyze a region
-python -m src.analysis.cli \
-    --region "Gulf Coast" \
-    --start-year 2000 \
-    --end-year 2022 \
+python -m src.analysis.generate_report \
+    --region gulf_coast \
     --data-type historical \
-    --format text \
+    --format markdown \
     --verbose
-
-# Analyze a specific station
-python -m src.analysis.cli \
-    --station 8770570 \
-    --data-type historical \
-    --format json \
-    --verbose
-```
 
 The data quality analysis provides:
 - Temporal coverage metrics
 - Data completeness assessment
-- Identified quality issues
-- Statistical anomalies
 - Summary statistics
-- Cross-station issues (for regional analysis)
-
-Output formats:
-- JSON: Machine-readable format with full detail
-- Text: Human-readable format with formatted output
 
 ### Common Arguments
 
-Both CLI tools support the following arguments:
+Both tools support the following arguments:
 
 - `--region`: Region to process (required)
 - `--output-dir`: Output directory for processed data
-- `--format`: Output format (csv/parquet for data, json/text for analysis)
+- `--format`: Output format (csv/parquet for data, markdown for analysis)
 - `--verbose`: Enable verbose logging
 
-## Output Format
+## Final Output Format
 
 ### Historical Data
 
 The processed historical data includes:
-- Station ID
+- County
 - Year
 - Number of flood days
-- Number of missing days
 - Region identifier
 
 ### Projected Data
 
 The projected data includes:
-- Station ID
+- County
 - Decade
 - Scenario (e.g., intermediate, intermediate-high)
 - Projected flood days
@@ -204,17 +166,24 @@ The projected data includes:
 ```
 county_level_tidal_flooding/
 ├── config/                           # Configuration files
-│   ├── tide-stations-list.yaml      # Master station list
-│   ├── fips_mappings.yaml           # County FIPS mappings
-│   ├── noaa_settings.yaml           # NOAA API settings
-│   └── *_tide_stations.yaml         # Regional configurations
-├── data/
-│   ├── raw/
-│   │   ├── shapefile_county/        # County boundaries
-│   │   └── shapefile_shoreline/     # Shoreline data
-│   └── cache/                       # NOAA API response cache
-│       ├── historical/              # Historical data cache
-│       └── projected/               # Projected data cache
+│   ├── region_mappings.yaml         # Region and county mappings
+│   ├── noaa_api_settings.yaml       # NOAA API settings
+│   └── tide_stations/
+│       ├── alaska_tide_stations.yaml
+│       ├── hawaii_tide_stations.yaml
+│       ├── pacific_islands_tide_stations.yaml
+│       ├── virgin_islands_tide_stations.yaml
+│       ├── puerto_rico_tide_stations.yaml
+│       ├── mid_atlantic_tide_stations.yaml
+│       └── north_atlantic_tide_stations.yaml
+│       └── south_atlantic_tide_stations.yaml
+│       └── gulf_coast_tide_stations.yaml
+│       └── west_coast_tide_stations.yaml
+├── output/
+│   ├── historical/
+│   ├── projected/
+│   ├── analysis/
+│  
 ├── src/
 │   └── noaa/
 │       ├── core/
@@ -236,122 +205,66 @@ county_level_tidal_flooding/
 └── requirements.txt
 ```
 
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests
-5. Submit a pull request
-
 ## Analysis Pipeline
-
-The analysis proceeds along two parallel tracks:
 
 ### Historical HTF Analysis
 1. Processing historical HTF observations by region
    - Data structure: Annual counts of minor flooding events
-   - Time range: 1950-2022
+   - Time range: 1920-2024
    - Source: NOAA Annual Flood Count Product (minor flooding only)
-2. Developing region-specific imputation strategies for historical data
-3. Generating county-level historical estimates
+2. Generating county-level historical estimates
    - Output: Annual minor flooding frequency by county
-   - Quality metrics for historical coverage
 
 ### Projected HTF Analysis
 1. Processing projected HTF data by region
    - Data structure: Decadal flooding frequency projections
    - Time range: 2020-2100
    - Source: NOAA Decadal Projections Product
-   - Multiple sea level rise scenarios (low to high)
-2. Developing region-specific imputation strategies for projections
+   - Multiple sea level rise scenarios
 3. Generating county-level projections
    - Output: Projected flooding frequency by county
    - Separate outputs for each sea level rise scenario
-   - Uncertainty quantification for projections
 
 The separation into historical and projected analyses is necessary due to:
 - Different data structures and temporal resolutions
 - Distinct quality control requirements
-- Different imputation strategies needed
-- Separate uncertainty quantification approaches
 
-## Original Pipeline Design (Archived)
+### Imputation Pipeline
 
-This section documents the original pipeline design before we moved to a region-specific approach.
+1. Create station to county mapping
+   - Generate reference points along the coast of each county
+   - Match stations to the nearest reference point with weights based on distance
+   - Output: station to county mapping
 
-### Original Preprocessing Pipeline
+### Assignment Pipeline
 
-```mermaid
-graph TD
-    subgraph Raw Data
-        A1[US Medium Shoreline Shapefile] --> B1[shapefile_converter.py]
-        A2[County Shapefile] --> B1
-        A3[Regional Shoreline Shapefiles] --> B1
-    end
+1. Assign flood days to each county based on the station to county mapping
+   - aggregate flood days by county and year
+   - Output: county-level flood days in csv
 
-    subgraph Shapefile Processing
-        B1 --> C1[shoreline.parquet]
-        B1 --> C2[county.parquet]
-        B1 --> C3[regional_shorelines/*.parquet]
-    end
+### Imputation Coverage Visualization
 
-    subgraph County Processing
-        C2 --> D1[coastal_counties_finder.py]
-        C3 --> D1
-        D1 --> E1[coastal_counties.parquet]
-    end
+The package includes visualization tools for analyzing tide gauge coverage across different coastal regions:
 
-    subgraph Reference Point Generation
-        E1 --> F1[coastal_points.py]
-        C3 --> F1
-        F1 --> G1[coastal_reference_points.parquet]
-    end
-```
+- **Coverage Metrics**: 
+  - Combines number of tide stations (n) and their mean weights (w̄) as CS = n × w̄
+  - Weights decrease with distance from each station
+  - Higher scores indicate better coverage
 
-### Original Data Pipeline
+- **Regional Visualizations**:
+  - Mid Atlantic (`imputation_mid_atlantic.py`)
+  - North Atlantic (`imputation_north_atlantic.py`)
+  - South Atlantic (`imputation_south_atlantic.py`)
+  - Gulf Coast (`imputation_gulf_coast.py`)
+  - Puerto Rico (`imputation_puerto_rico.py`)
+  - Virgin Islands (`imputation_virgin_islands.py`)
+  - Hawaii (`imputation_hawaii.py`)
 
-```mermaid
-graph TD
-    subgraph Data Collection
-        A[NOAA Historical HTF API] --> B[htf_fetcher.py]
-        C[NOAA Projected HTF API] --> D[htf_projector.py]
-        E[Gauge-County Mapping] --> F[imputed_gauge_county_mapping.parquet]
-    end
+Each visualization includes:
+- Choropleth maps showing coverage scores
+- Tide station locations and names
+- Coverage statistics and metrics
+- Region-specific projections and styling
 
-    subgraph Data Processing
-        B --> G[historical_htf.parquet]
-        D --> H[projected_htf.parquet]
-        
-        G --> I[data_loader.py]
-        H --> I
-        F --> I
-        
-        I --> J[spatial_ops.py]
-        J --> K[weight_calculator.py]
-        K --> L[imputation_structure.parquet]
-    end
+Output maps are saved to `output/maps/imputation/` directory.
 
-    subgraph Analysis & Reporting
-        L --> M[generate_report.py]
-        M --> N[imputation_report.md]
-        M --> O[distance_distribution.png]
-        M --> P[weight_distribution.png]
-        
-        L --> Q[assignment.py]
-        Q --> R[historical_county_htf.csv/parquet]
-        Q --> S[projected_county_htf.csv/parquet]
-    end
-```
-
-The original approach attempted to process all regions through a single pipeline. However, this proved problematic due to significant regional differences in:
-- Gauge density and distribution
-- Geographic scale and complexity
-- Data quality and availability
-- Physical oceanographic characteristics
-
-This led to our current approach of starting with careful regional verification before proceeding with data processing.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
