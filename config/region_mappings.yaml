@@ -1,0 +1,128 @@
+# FIPS Code Mappings and Region Definitions
+
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: Regional mappings for NOAA tide gauge stations
+
+# Region definitions with state FIPS codes and map bounds
+regions:
+  north_atlantic:
+    name: north_atlantic
+    state_codes:
+      - ME
+      - NH
+      - MA
+      - RI
+      - CT
+    bounds:
+      min_lat: 41.0
+      max_lat: 45.0
+      min_lon: -71.0
+      max_lon: -67.0
+
+  mid_atlantic:
+    name: mid_atlantic
+    state_codes:
+      - NY
+      - NJ
+      - PA
+      - DE
+      - MD
+      - VA
+    bounds:
+      min_lat: 37.0
+      max_lat: 41.0
+      min_lon: -77.0
+      max_lon: -71.0
+
+  south_atlantic:
+    name: south_atlantic
+    state_codes:
+      - NC
+      - SC
+      - GA
+      - FL
+    bounds:
+      min_lat: 25.0
+      max_lat: 37.0
+      min_lon: -82.0
+      max_lon: -75.0
+
+  gulf_coast:
+    name: gulf_coast
+    state_codes:
+      - AL
+      - LA
+      - MS
+      - TX
+      - FL
+    bounds:
+      min_lat: 25.0
+      max_lat: 31.0
+      min_lon: -98.0
+      max_lon: -88.0
+
+  west_coast:
+    name: west_coast
+    state_codes:
+      - CA
+      - OR
+      - WA
+    bounds:
+      min_lat: 32.0
+      max_lat: 49.0
+      min_lon: -125.0
+      max_lon: -117.0
+
+  alaska:
+    name: alaska
+    state_codes:
+      - AK
+    bounds:
+      min_lat: 51.0
+      max_lat: 71.5
+      min_lon: -180.0
+      max_lon: -130.0
+
+  hawaii:
+    name: hawaii
+    state_codes:
+      - HI
+    bounds:
+      min_lat: 19.0
+      max_lat: 22.0
+      min_lon: -160.0
+      max_lon: -154.0
+
+  pacific_islands:
+    name: pacific_islands
+    state_codes:
+      - GU
+      - AS
+      - MP
+    bounds:
+      min_lat: -14.5
+      max_lat: 22.0
+      min_lon: 144.5
+      max_lon: 170.0
+
+  virgin_islands:
+    name: virgin_islands
+    state_codes:
+      - VI
+    bounds:
+      min_lat: 17.5
+      max_lat: 18.5
+      min_lon: -65.0
+      max_lon: -64.5
+
+  puerto_rico:
+    name: puerto_rico
+    state_codes:
+      - PR
+    bounds:
+      min_lat: 17.5
+      max_lat: 18.5
+      min_lon: -67.5
+      max_lon: -65.0

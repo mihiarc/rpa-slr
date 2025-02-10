@@ -23,12 +23,12 @@ class RegionMapper:
     
     def __init__(self, 
                  output_dir: Path = OUTPUT_DIR / "imputation" / "maps",
-                 fips_config: Path = CONFIG_DIR / "fips_mappings.yaml"):
+                 region_config: Path = CONFIG_DIR / "region_mappings.yaml"):
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Load FIPS mappings and region definitions
-        with open(fips_config) as f:
+        # Load region mappings and definitions
+        with open(region_config) as f:
             config = yaml.safe_load(f)
             self.regions = config['regions']
             self.state_names = config['state_names']
@@ -130,7 +130,7 @@ class RegionMapper:
         
         # Filter data for region
         region_info = self.regions[region]
-        region_counties = counties[counties['state_fips'].isin(region_info['states'])]
+        region_counties = counties[counties['state_fips'].isin(region_info['state_codes'])]
         
         if region_counties.empty:
             logger.warning(f"No counties found in region {region}")

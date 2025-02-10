@@ -2,7 +2,7 @@
 Projected High Tide Flooding Data Service.
 
 This module handles retrieval and processing of projected high tide flooding data from NOAA.
-Each record contains projected flooding frequencies under different climate scenarios:
+Each record contains projected flood days for different sea level rise scenarios:
 - Low
 - Intermediate-Low
 - Intermediate
@@ -11,76 +11,119 @@ Each record contains projected flooding frequencies under different climate scen
 """
 
 from typing import Dict, List, Optional
+from datetime import datetime
 import logging
 from pathlib import Path
 import pandas as pd
 import numpy as np
 
-from .client import NOAAClient, NOAAApiError
-from .cache import NOAACache
+from ..core.noaa_client import NOAAClient, NOAAApiError
+from ..core.cache_manager import NOAACache
 
 logger = logging.getLogger(__name__)
 
-class ProjectedHTFService:
+class ProjectedHTFFetcher:
     """Service for managing projected high tide flooding data."""
     
-    def __init__(self, cache_dir: Optional[Path] = None):
+    def __init__(self, cache: NOAACache):
         """Initialize the projected HTF service.
         
         Args:
-            cache_dir: default to data/noaa_cache
+            cache: NOAACache instance for data caching
         """
+        logger.debug("Initializing ProjectedHTFFetcher")
         self.client = NOAAClient()
-        self.cache = NOAACache(config_dir=cache_dir)
+        self.cache = cache
         
-    def get_station_data(self, station: Optional[str] = None) -> Dict:
+        # Load NOAA settings for validation
+        self.settings = self.cache.settings['data']['projected']
+    
+    def get_station_data(
+        self,
+        station: Optional[str] = None,
+        decade: Optional[int] = None
+    ) -> List[Dict]:
         """Get projected HTF data for a station.
         
         Args:
-            station: Station ID. If None, returns data for all stations.
+            station: NOAA station identifier. If None, returns data for all stations.
+            decade: Specific decade to retrieve. If None, returns all available decades.
             
         Returns:
-            Dict mapping station IDs to their projected data.
-        """
-        try:
-            data = self.client.fetch_decadal_projections(station=station)
-            if not data:
-                logger.warning(f"No data returned for station {station}")
-                return {}
-                
-            if 'DecadalProjection' not in data:
-                logger.warning(f"No projection data in response for station {station}")
-                return {}
-                
-            return {station: data['DecadalProjection']}
+            List of decadal flood count records containing:
+            - Station ID and name
+            - Decade
+            - Projected flood days for each scenario
             
+        Raises:
+            ValueError: If station ID is invalid or decade is out of range
+            NOAAApiError: If there is an error fetching data from the API
+        """
+        logger.info(f"Fetching projected data for station: {station}, decade: {decade}")
+        
+        if station and not self.cache.validate_station_id(station):
+            logger.error(f"Invalid station ID: {station}")
+            raise ValueError(f"Invalid station ID: {station}")
+            
+        # Validate decade if provided
+        if decade is not None:
+            if not (self.settings['start_decade'] <= decade <= self.settings['end_decade']):
+                msg = f"Decade {decade} out of valid range ({self.settings['start_decade']}-{self.settings['end_decade']})"
+                logger.error(msg)
+                raise ValueError(msg)
+            
+        try:
+            # Check cache first
+            if station:
+                logger.debug(f"Checking cache for station {station}")
+                cached_data = self.cache.get_projected_data(station, decade)
+                if cached_data:
+                    logger.debug(f"Found cached data for station {station}")
+                    return cached_data
+            
+            # Fetch from API if not in cache
+            logger.debug(f"Fetching data from NOAA API for station {station}")
+            data = self.client.fetch_decadal_projections(station=station, decade=decade)
+            
+            # Cache the data
+            logger.debug(f"Caching {len(data)} records for station {station}")
+            for record in data:
+                self.cache.save_projected_data(
+                    station_id=record["stnId"],
+                    decade=record["decade"],
+                    data=record
+                )
+            
+            return data
+                
         except NOAAApiError as e:
-            logger.error(f"Error fetching data for station {station}: {str(e)}")
-            return {}
+            logger.error(f"Error fetching projected data for station {station}: {str(e)}")
+            raise NOAAApiError(f"Failed to fetch projected data: {str(e)}")
     
     def get_complete_dataset(
         self,
         stations: Optional[List[str]] = None,
-    ) -> Dict:
+    ) -> Dict[str, List[Dict]]:
         """Get the complete projected HTF dataset.
         
         Args:
             stations: List of station IDs. If None, fetches data for all stations.
             
         Returns:
-            Dict mapping station IDs to their projected data.
+            Dict mapping station IDs to their projected flood count records
         """
-        if stations is None:
-            stations = [s['id'] for s in self.cache.get_stations()]
-            
+        # Get stations list if not provided
+        stations = stations or [s['id'] for s in self.cache.get_stations()]
+        
         dataset = {}
-        for station in stations:
+        for station_id in stations:
             try:
-                station_data = self.get_station_data(station=station)
+                station_data = self.get_station_data(station=station_id)
                 if station_data:
-                    dataset.update(station_data)
+                    dataset[station_id] = station_data
+                    
             except Exception as e:
-                logger.error(f"Error processing station {station}: {str(e)}")
+                logger.error(f"Error fetching data for station {station_id}: {e}")
                 continue
                 
         return dataset

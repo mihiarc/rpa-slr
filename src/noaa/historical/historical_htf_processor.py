@@ -14,6 +14,7 @@ import pandas as pd
 import yaml
 
 from ..core import NOAACache
+from .historical_htf_fetcher import HistoricalHTFFetcher
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +28,16 @@ class HistoricalHTFProcessor:
             config_dir: Optional custom config directory
         """
         self.config_dir = config_dir or (Path(__file__).parent.parent.parent.parent / "config")
-        self.cache = NOAACache(config_dir=self.config_dir)
+        logger.debug(f"Using config directory: {self.config_dir}")
         
-        # Load FIPS mappings for region definitions
-        with open(self.config_dir / "fips_mappings.yaml") as f:
-            self.fips_config = yaml.safe_load(f)
+        self.cache = NOAACache(config_dir=self.config_dir)
+        self.fetcher = HistoricalHTFFetcher(self.cache)
+        
+        # Load region mappings
+        region_file = self.config_dir / "region_mappings.yaml"
+        logger.debug(f"Loading region mappings from: {region_file}")
+        with open(region_file) as f:
+            self.region_config = yaml.safe_load(f)
             
     def process_region(self, region: str, start_year: int, end_year: int) -> pd.DataFrame:
         """Process historical HTF data for a specific region.
@@ -47,26 +53,37 @@ class HistoricalHTFProcessor:
         Raises:
             ValueError: If region is not found or data is invalid
         """
+        logger.info(f"Processing region: {region} for years {start_year}-{end_year}")
+        
         # Validate region
-        if region not in self.fips_config['regions']:
+        if region not in self.region_config['regions']:
+            logger.error(f"Region '{region}' not found in region config. Available regions: {list(self.region_config['regions'].keys())}")
             raise ValueError(f"Invalid region: {region}")
             
         # Get states in region
-        states = self.fips_config['regions'][region]['states']
+        states = self.region_config['regions'][region]['state_codes']
+        logger.debug(f"States in region {region}: {states}")
         
         # Get stations in region
         stations = self._get_region_stations(region)
+        logger.info(f"Found {len(stations)} stations in region {region}")
+        if stations:
+            logger.debug(f"First few stations: {stations[:3]}")
         
         # Process each station
         data = []
         for station in stations:
+            logger.debug(f"Processing station: {station['id']} ({station['name']})")
             station_data = self._process_station(
                 station['id'],
                 start_year,
                 end_year
             )
             if station_data:
+                logger.debug(f"Got {len(station_data)} records for station {station['id']}")
                 data.extend(station_data)
+            else:
+                logger.warning(f"No data returned for station {station['id']}")
                 
         # Convert to DataFrame
         df = pd.DataFrame(data)
@@ -77,6 +94,7 @@ class HistoricalHTFProcessor:
             
         # Add region column
         df['region'] = region
+        logger.info(f"Processed {len(df)} total records for region {region}")
         
         return df
         
@@ -89,19 +107,34 @@ class HistoricalHTFProcessor:
         Returns:
             List of station records
         """
+        # Convert region name to filename format (e.g., "Gulf Coast" -> "gulf_coast")
+        region_file = region.lower().replace(' ', '_')
+        
         # Load regional tide station config
-        config_file = self.config_dir / f"{region.lower()}_tide_stations.yaml"
-        with open(config_file) as f:
-            config = yaml.safe_load(f)
+        config_file = self.config_dir / "tide_stations" / f"{region_file}_tide_stations.yaml"
+        logger.debug(f"Loading tide stations from: {config_file}")
+        
+        try:
+            with open(config_file) as f:
+                config = yaml.safe_load(f)
+                
+            stations = [
+                {
+                    'id': station_id,
+                    'name': station_data['name'],
+                    'location': station_data['location']
+                }
+                for station_id, station_data in config['stations'].items()
+            ]
+            logger.debug(f"Loaded {len(stations)} stations from config")
+            return stations
             
-        return [
-            {
-                'id': station_id,
-                'name': station_data['name'],
-                'location': station_data['location']
-            }
-            for station_id, station_data in config['stations'].items()
-        ]
+        except FileNotFoundError:
+            logger.error(f"Tide station config file not found: {config_file}")
+            return []
+        except Exception as e:
+            logger.error(f"Error loading tide station config: {e}")
+            return []
         
     def _process_station(
         self,
@@ -119,18 +152,33 @@ class HistoricalHTFProcessor:
         Returns:
             List of processed records
         """
+        logger.debug(f"Processing station {station_id} for years {start_year}-{end_year}")
         data = []
-        for year in range(start_year, end_year + 1):
-            record = self.cache.get_annual_data(station_id, year, 'historical')
-            if record and self._validate_record(record):
-                processed = {
-                    'station_id': station_id,
-                    'year': year,
-                    'flood_days': record['minCount'],  # Only using minor flood counts
-                    'missing_days': record['nanCount']
-                }
-                data.append(processed)
+        
+        try:
+            # Fetch data from NOAA API
+            station_data = self.fetcher.get_station_data(station=station_id)
+            
+            if station_data:
+                # Filter by year range
+                for record in station_data:
+                    year = record.get('year')
+                    if year and start_year <= year <= end_year:
+                        processed = {
+                            'station_id': station_id,
+                            'year': year,
+                            'flood_days': record.get('minCount', 0),  # Only using minor flood counts
+                            'missing_days': record.get('nanCount', 0)
+                        }
+                        data.append(processed)
+                        logger.debug(f"Processed record: {processed}")
+            else:
+                logger.debug(f"No data returned from API for station {station_id}")
                 
+        except Exception as e:
+            logger.error(f"Error processing station {station_id}: {e}")
+            
+        logger.debug(f"Processed {len(data)} records for station {station_id}")
         return data
         
     def _validate_record(self, record: Dict) -> bool:
@@ -144,6 +192,7 @@ class HistoricalHTFProcessor:
         """
         required_fields = ['minCount', 'nanCount']
         if not all(field in record for field in required_fields):
+            logger.warning(f"Missing required fields in record: {record}")
             return False
             
         # Validate numeric fields
@@ -153,11 +202,14 @@ class HistoricalHTFProcessor:
             
             # Basic range checks
             if min_count < 0 or nan_count < 0:
+                logger.warning(f"Invalid negative counts: min_count={min_count}, nan_count={nan_count}")
                 return False
             if min_count + nan_count > 366:  # Account for leap years
+                logger.warning(f"Total days exceeds year length: min_count={min_count}, nan_count={nan_count}")
                 return False
                 
             return True
             
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Error validating record: {e}")
             return False

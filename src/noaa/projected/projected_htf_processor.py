@@ -14,6 +14,7 @@ import pandas as pd
 import yaml
 
 from ..core import NOAACache
+from .projected_htf_fetcher import ProjectedHTFFetcher
 
 logger = logging.getLogger(__name__)
 
@@ -28,13 +29,16 @@ class ProjectedHTFProcessor:
         """
         self.config_dir = config_dir or (Path(__file__).parent.parent.parent.parent / "config")
         self.cache = NOAACache(config_dir=self.config_dir)
+        self.fetcher = ProjectedHTFFetcher(self.cache)
         
-        # Load FIPS mappings for region definitions
-        with open(self.config_dir / "fips_mappings.yaml") as f:
-            self.fips_config = yaml.safe_load(f)
+        # Load region mappings
+        region_file = self.config_dir / "region_mappings.yaml"
+        logger.debug(f"Loading region mappings from: {region_file}")
+        with open(region_file) as f:
+            self.region_config = yaml.safe_load(f)
             
         # Load NOAA settings for scenario information
-        with open(self.config_dir / "noaa_settings.yaml") as f:
+        with open(self.config_dir / "noaa_api_settings.yaml") as f:
             self.noaa_settings = yaml.safe_load(f)
             
     def process_region(self, region: str, start_decade: int, end_decade: int) -> pd.DataFrame:
@@ -52,11 +56,11 @@ class ProjectedHTFProcessor:
             ValueError: If region is not found or data is invalid
         """
         # Validate region
-        if region not in self.fips_config['regions']:
+        if region not in self.region_config['regions']:
             raise ValueError(f"Invalid region: {region}")
             
         # Get states in region
-        states = self.fips_config['regions'][region]['states']
+        states = self.region_config['regions'][region]['state_codes']
         
         # Get stations in region
         stations = self._get_region_stations(region)

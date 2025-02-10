@@ -105,12 +105,12 @@ class ReportGenerator:
     
     def __init__(self, 
                  output_dir: Path = OUTPUT_DIR / "imputation",
-                 fips_config: Path = CONFIG_DIR / "fips_mappings.yaml"):
+                 region_config: Path = CONFIG_DIR / "region_mappings.yaml"):
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
         # Load FIPS mappings and region definitions
-        with open(fips_config) as f:
+        with open(region_config) as f:
             config = yaml.safe_load(f)
             self.regions = config['regions']
             self.state_names = config['state_names']
@@ -121,7 +121,7 @@ class ReportGenerator:
         
         for region, info in self.regions.items():
             # Filter points for this region
-            region_points = df[df['state_fips'].isin(info['states'])]
+            region_points = df[df['state_fips'].isin(info['state_codes'])]
             
             if len(region_points) > 0:
                 stats = {

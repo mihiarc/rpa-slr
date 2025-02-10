@@ -1,0 +1,69 @@
+# NOAA API and Data Configuration
+
+api:
+  base_url: "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi"
+  requests_per_second: 2.0
+  endpoints:
+    historical: "/htf/htf_annual.json"
+    projected: "/htf/htf_projection_decadal.json"
+
+cache:
+  directory: "data/cache"
+  data_types:
+    - historical
+    - projected
+  retention:
+    historical: 30  # days
+    projected: 90   # days
+    metadata: 7     # days
+  update_frequency:
+    historical: 24  # hours
+    projected: 168  # hours (1 week)
+    metadata: 12    # hours
+
+stations:
+  config_dir: "tide_stations"  # Directory containing regional configs
+  metadata:
+    description: "Configuration for NOAA tide gauge stations"
+    source: "NOAA Tides and Currents"
+    last_updated: "2024-01-01"
+    data_url: "https://tidesandcurrents.noaa.gov/api/datagetter"
+    documentation_url: "https://tidesandcurrents.noaa.gov/api/"
+
+data:
+  historical:
+    start_year: 1920
+    end_year: 2024
+    endpoint: "htf_annual"
+    response_fields:
+      - stnId
+      - stnName
+      - year
+      - minCount    # Minor flood days (primary metric of interest)
+      - nanCount    # Missing data days
+    query_params:
+      - station    # 7-digit string
+      - year      # YYYY format
+      - range     # Integer, optional
+    units: "days"
+  
+  projected:
+    start_decade: 2020
+    end_decade: 2100
+    endpoint: "htf_projection_decadal"
+    response_fields:
+      - stnId
+      - stnName
+      - decade
+      - source
+      - low
+      - intLow
+      - intermediate
+      - intHigh
+      - high
+    query_params:
+      - station    # 7-digit string
+      - decade    # YYYY0 format
+      - range     # Integer, optional
+    units: "days_per_year"
+    source_documentation: "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf" 

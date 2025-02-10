@@ -82,19 +82,14 @@ def parse_args():
     return parser.parse_args()
 
 def validate_region(region: str, config_dir: Path) -> bool:
-    """Validate that the region exists in configuration.
-    
-    Args:
-        region: Region name to validate
-        config_dir: Path to config directory
-        
-    Returns:
-        True if valid, False otherwise
-    """
+    """Validate region against available configurations."""
     try:
-        with open(config_dir / "fips_mappings.yaml") as f:
-            config = yaml.safe_load(f)
-            return region in config['regions']
+        # Load region mappings
+        with open(config_dir / "region_mappings.yaml") as f:
+            region_config = yaml.safe_load(f)
+            
+        # Check if region exists
+        return region.lower() in [r.lower() for r in region_config['regions'].keys()]
     except Exception as e:
         logger.error(f"Error validating region: {e}")
         return False

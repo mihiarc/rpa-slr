@@ -1,37 +1,34 @@
 """
-NOAA High Tide Flooding (HTF) Data Access.
+NOAA High Tide Flooding Data Package.
 
-This package provides tools for accessing and processing NOAA's HTF data:
-
-Core Infrastructure:
-- API client with authentication and error handling
-- Rate limiting for API requests
-- Caching system for efficient data retrieval
-
-Historical Data:
-- Fetching historical minor flood counts
-- Processing historical data by region
-- Command line tools for historical data
-
-Projected Data:
-- Fetching HTF projections
-- Processing projection data by region
-- Command line tools for projections
+This package provides tools for accessing and processing NOAA high tide flooding data,
+including both historical observations and future projections.
 """
 
-from .core import NOAAClient, NOAAApiError, NOAACache
+from . import core
+from . import historical
+from . import projected
+
+# Import commonly used classes for convenience
+from .core import NOAAClient, NOAACache
 from .historical import HistoricalHTFFetcher, HistoricalHTFProcessor
 from .projected import ProjectedHTFFetcher, ProjectedHTFProcessor
 
 __all__ = [
-    # Core
+    # Submodules
+    'core',
+    'historical',
+    'projected',
+    
+    # Core classes
     'NOAAClient',
-    'NOAAApiError',
     'NOAACache',
-    # Historical
+    
+    # Historical data classes
     'HistoricalHTFFetcher',
     'HistoricalHTFProcessor',
-    # Projected
+    
+    # Projected data classes
     'ProjectedHTFFetcher',
-    'ProjectedHTFProcessor',
+    'ProjectedHTFProcessor'
 ] 

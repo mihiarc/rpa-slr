@@ -16,6 +16,16 @@ A Python package for retrieving and processing NOAA high tide flooding (HTF) dat
   - Support for multiple climate scenarios
   - Export processed data in CSV or Parquet format
 
+- **Data Quality Analysis**
+  - Comprehensive data quality assessment
+  - Temporal coverage analysis
+  - Data completeness checks
+  - Quality issue identification
+  - Anomaly detection
+  - Cross-station issue detection
+  - Statistical summaries
+  - Export analysis in JSON or human-readable format
+
 - **Core Infrastructure**
   - Efficient API client with rate limiting
   - Robust caching system
@@ -36,10 +46,37 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install dependencies:
+3. Install the package:
 ```bash
-pip install -r requirements.txt
+# For users
+pip install .
+
+# For developers
+pip install -e .[dev]
 ```
+
+After installation, the following commands become available:
+- `htf-historical`: Process historical HTF data
+- `htf-projected`: Process projected HTF data
+- `htf-analyze`: Run data quality analysis
+
+## Requirements
+
+- Python 3.8 or higher
+- Core dependencies:
+  - requests >= 2.31.0
+  - pandas >= 2.0.0
+  - numpy >= 1.24.0
+  - pyarrow >= 14.0.1
+  - pyyaml >= 6.0.0
+  - scipy >= 1.10.0
+  - matplotlib >= 3.7.0
+
+Development dependencies (installed with `.[dev]`):
+  - pytest >= 7.0.0
+  - black >= 23.0.0
+  - flake8 >= 6.0.0
+  - mypy >= 1.0.0
 
 ## Configuration
 
@@ -97,14 +134,47 @@ python -m noaa.projected.projected_htf_cli \
     --format parquet
 ```
 
+### Data Quality Analysis
+
+Analyze data quality for a specific region or station:
+
+```bash
+# Analyze a region
+python -m src.analysis.cli \
+    --region "Gulf Coast" \
+    --start-year 2000 \
+    --end-year 2022 \
+    --data-type historical \
+    --format text \
+    --verbose
+
+# Analyze a specific station
+python -m src.analysis.cli \
+    --station 8770570 \
+    --data-type historical \
+    --format json \
+    --verbose
+```
+
+The data quality analysis provides:
+- Temporal coverage metrics
+- Data completeness assessment
+- Identified quality issues
+- Statistical anomalies
+- Summary statistics
+- Cross-station issues (for regional analysis)
+
+Output formats:
+- JSON: Machine-readable format with full detail
+- Text: Human-readable format with formatted output
+
 ### Common Arguments
 
 Both CLI tools support the following arguments:
 
 - `--region`: Region to process (required)
 - `--output-dir`: Output directory for processed data
-- `--config-dir`: Custom config directory path
-- `--format`: Output format (csv or parquet)
+- `--format`: Output format (csv/parquet for data, json/text for analysis)
 - `--verbose`: Enable verbose logging
 
 ## Output Format

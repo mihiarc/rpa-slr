@@ -1,15 +1,21 @@
-"""
-Tests for the NOAA API client.
-"""
+"""Tests for the NOAA API Client."""
 
 import pytest
 import responses
-from unittest.mock import patch
-from src.noaa.client import NOAAClient, NOAAApiError
+import json
+from pathlib import Path
+from unittest.mock import patch, Mock
+from src.noaa.core.noaa_client import NOAAClient, NOAAApiError
+import time
 
 # Test data fixtures
 SAMPLE_ANNUAL_RESPONSE = {
-    "count": 2,
+    "metadata": {
+        "id": "8638610",
+        "name": "Sewells Point, VA",
+        "lat": "36.9467",
+        "lon": "-76.3300"
+    },
     "AnnualFloodCount": [
         {
             "stnId": "8638610",
@@ -33,13 +39,18 @@ SAMPLE_ANNUAL_RESPONSE = {
 }
 
 SAMPLE_PROJECTION_RESPONSE = {
-    "count": 2,
+    "metadata": {
+        "id": "8638610",
+        "name": "Sewells Point, VA",
+        "lat": "36.9467",
+        "lon": "-76.3300"
+    },
     "DecadalProjection": [
         {
             "stnId": "8638610",
             "stnName": "Sewells Point, VA",
             "decade": 2050,
-            "source": "test_source",
+            "source": "https://tidesandcurrents.noaa.gov/publications/HTF_Notice_of_Methodology_Update_2023.pdf",
             "low": 85,
             "intLow": 100,
             "intermediate": 125,
@@ -52,7 +63,7 @@ SAMPLE_PROJECTION_RESPONSE = {
 @pytest.fixture
 def client():
     """Create a NOAAClient instance for testing."""
-    return NOAAClient(requests_per_second=10.0)  # Higher rate limit for testing
+    return NOAAClient()
 
 @pytest.fixture
 def mock_responses():
@@ -61,19 +72,12 @@ def mock_responses():
         yield rsps
 
 class TestNOAAClient:
-    """Test suite for NOAAClient class."""
+    """Test suite for NOAAClient."""
     
-    def test_init_default_values(self):
-        """Test client initialization with default values."""
-        client = NOAAClient()
+    def test_init(self, client):
+        """Test client initialization."""
         assert client.api_base_url == "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi"
-        assert client.rate_limiter.requests_per_second == 2.0
-
-    def test_init_custom_values(self):
-        """Test client initialization with custom values."""
-        client = NOAAClient(api_base_url="https://test.api", requests_per_second=5.0)
-        assert client.api_base_url == "https://test.api"
-        assert client.rate_limiter.requests_per_second == 5.0
+        assert client.rate_limiter is not None
 
     @responses.activate
     def test_fetch_annual_flood_counts_success(self, client):
@@ -89,7 +93,7 @@ class TestNOAAClient:
         assert len(result) == 2
         assert result[0]["stnId"] == "8638610"
         assert result[0]["year"] == 2010
-        assert "majCount" in result[0]
+        assert result[0]["majCount"] == 0
 
     @responses.activate
     def test_fetch_annual_flood_counts_all_stations(self, client):
@@ -101,16 +105,18 @@ class TestNOAAClient:
             status=200
         )
 
-        result = client.fetch_annual_flood_counts()
+        result = client.fetch_annual_flood_counts(station="8638610")  # Station ID is required
         assert len(result) == 2
+        assert all(r["stnId"] == "8638610" for r in result)
 
     @responses.activate
     def test_fetch_annual_flood_counts_error(self, client):
-        """Test handling of API errors in annual flood counts."""
+        """Test handling of API errors in flood count fetch."""
         responses.add(
             responses.GET,
             f"{client.api_base_url}/htf/htf_annual.json",
-            status=404
+            json={"error": "API Error"},
+            status=400
         )
 
         with pytest.raises(NOAAApiError):
@@ -127,21 +133,59 @@ class TestNOAAClient:
         )
 
         result = client.fetch_decadal_projections(station="8638610")
-        assert result["count"] == 2
-        assert "DecadalProjection" in result
-        assert result["DecadalProjection"][0]["decade"] == 2050
+        assert len(result) == 1
+        assert result[0]["stnId"] == "8638610"
+        assert result[0]["decade"] == 2050
+        assert result[0]["low"] == 85
 
     @responses.activate
     def test_fetch_decadal_projections_error(self, client):
-        """Test handling of API errors in decadal projections."""
+        """Test handling of API errors in projection fetch."""
         responses.add(
             responses.GET,
             f"{client.api_base_url}/htf/htf_projection_decadal.json",
-            status=500
+            json={"error": "API Error"},
+            status=400
         )
 
         with pytest.raises(NOAAApiError):
             client.fetch_decadal_projections(station="8638610")
+
+    def test_rate_limiting(self, client):
+        """Test that rate limiting is enforced."""
+        with patch('time.sleep') as mock_sleep:
+            with responses.RequestsMock() as rsps:
+                rsps.add(
+                    responses.GET,
+                    f"{client.api_base_url}/htf/htf_annual.json",
+                    json=SAMPLE_ANNUAL_RESPONSE,
+                    status=200
+                )
+
+                # Make multiple requests
+                for _ in range(3):
+                    client.fetch_annual_flood_counts(station="8638610")
+
+                # Verify rate limiting was applied
+                assert mock_sleep.call_count > 0
+
+    def test_invalid_station_id(self, client):
+        """Test handling of invalid station ID."""
+        with pytest.raises(NOAAApiError, match="Station ID is required"):
+            client.fetch_annual_flood_counts(station=None)
+
+    @responses.activate
+    def test_invalid_year(self, client):
+        """Test handling of invalid year parameter."""
+        responses.add(
+            responses.GET,
+            f"{client.api_base_url}/htf/htf_annual.json",
+            json={"error": "Invalid year parameter"},
+            status=400
+        )
+
+        with pytest.raises(NOAAApiError, match="Failed to fetch flood count data"):
+            client.fetch_annual_flood_counts(station="8638610", year="invalid")
 
     @responses.activate
     def test_invalid_json_response(self, client):
@@ -154,22 +198,4 @@ class TestNOAAClient:
         )
 
         with pytest.raises(NOAAApiError):
-            client.fetch_annual_flood_counts()
-
-    def test_rate_limiting(self, client):
-        """Test that rate limiting is enforced."""
-        with patch('time.sleep') as mock_sleep:
-            with responses.RequestsMock() as rsps:
-                rsps.add(
-                    responses.GET,
-                    f"{client.api_base_url}/htf/htf_annual.json",
-                    json=SAMPLE_ANNUAL_RESPONSE,
-                    status=200
-                )
-                
-                # Make multiple requests
-                for _ in range(3):
-                    client.fetch_annual_flood_counts()
-                
-                # Verify rate limiting was applied
-                assert mock_sleep.called 
+            client.fetch_annual_flood_counts(station="8638610") 

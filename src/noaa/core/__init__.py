@@ -1,14 +1,17 @@
 """
-Core NOAA API infrastructure.
+NOAA Core Functionality.
 
-This module provides the foundational components for interacting with the NOAA API:
-- API client with authentication and error handling
-- Rate limiting for API requests
-- Caching system for efficient data retrieval
+This module provides core functionality for interacting with NOAA APIs
+and managing data caching.
 """
 
 from .noaa_client import NOAAClient, NOAAApiError
-from .rate_limiter import RateLimiter
 from .cache_manager import NOAACache
+from .rate_limiter import RateLimiter
 
-__all__ = ['NOAAClient', 'NOAAApiError', 'RateLimiter', 'NOAACache']
+__all__ = [
+    'NOAAClient',
+    'NOAAApiError',
+    'NOAACache',
+    'RateLimiter'
+]

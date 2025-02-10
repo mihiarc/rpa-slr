@@ -1,0 +1,148 @@
+metadata:
+  source: NOAA Tides and Currents
+  last_updated: '2024-03-01'
+  description: List of NOAA tide gauge stations in the Gulf Coast region
+  coordinate_system: WGS84 (EPSG:4326)
+  region: gulf_coast
+stations:
+  # Florida (Gulf Coast)
+  '8724580':
+    name: Key West
+    location:
+      lat: 24.551167
+      lon: -81.808167
+    region: florida_gulf
+  '8725110':
+    name: Naples
+    location:
+      lat: 26.131667
+      lon: -81.807778
+    region: florida_gulf
+  '8726520':
+    name: St. Petersburg
+    location:
+      lat: 27.760278
+      lon: -82.626944
+    region: florida_gulf
+  '8726724':
+    name: Clearwater Beach
+    location:
+      lat: 27.978333
+      lon: -82.831667
+    region: florida_gulf
+  '8727520':
+    name: Cedar Key
+    location:
+      lat: 29.135
+      lon: -83.031667
+    region: florida_gulf
+  '8728690':
+    name: Apalachicola
+    location:
+      lat: 29.727222
+      lon: -84.980556
+    region: florida_gulf
+  '8729108':
+    name: Panama City
+    location:
+      lat: 30.152222
+      lon: -85.666944
+    region: florida_gulf
+  '8729840':
+    name: Pensacola
+    location:
+      lat: 30.404444
+      lon: -87.211111
+    region: florida_gulf
+
+  # Alabama
+  '8735180':
+    name: Dauphin Island
+    location:
+      lat: 30.25
+      lon: -88.075
+    region: alabama
+  '8737048':
+    name: Mobile State Docks
+    location:
+      lat: 30.705
+      lon: -88.043056
+    region: alabama
+
+  # Mississippi
+  '8741533':
+    name: Pascagoula NOAA Lab
+    location:
+      lat: 30.367778
+      lon: -88.563611
+    region: mississippi
+  '8747437':
+    name: Bay Waveland Yacht Club
+    location:
+      lat: 30.325556
+      lon: -89.325556
+    region: mississippi
+
+  # Louisiana
+  '8760721':
+    name: Pilottown
+    location:
+      lat: 29.178333
+      lon: -89.258333
+    region: louisiana
+  '8761724':
+    name: Grand Isle
+    location:
+      lat: 29.263333
+      lon: -89.957222
+    region: louisiana
+  '8764227':
+    name: New Canal Station
+    location:
+      lat: 30.027222
+      lon: -90.113333
+    region: louisiana
+
+  # Texas
+  '8770570':
+    name: Sabine Pass North
+    location:
+      lat: 29.728333
+      lon: -93.87
+      region: texas
+  '8771013':
+    name: Eagle Point
+    location:
+      lat: 29.48
+      lon: -94.918333
+    region: texas
+  '8771341':
+    name: Galveston Bay Entrance
+    location:
+      lat: 29.357778
+      lon: -94.724722
+    region: texas
+  '8772447':
+    name: Freeport
+    location:
+      lat: 28.943333
+      lon: -95.302778
+    region: texas
+  '8774770':
+    name: Rockport
+    location:
+      lat: 28.021667
+      lon: -97.046667
+    region: texas
+  '8775870':
+    name: Corpus Christi
+    location:
+      lat: 27.580556
+      lon: -97.216667
+    region: texas
+  '8779770':
+    name: Port Isabel
+    location:
+      lat: 26.061111
+      lon: -97.215556
+    region: texas

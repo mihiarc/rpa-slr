@@ -15,31 +15,37 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-from .client import NOAAClient, NOAAApiError
-from .cache import NOAACache
+from ..core.noaa_client import NOAAClient, NOAAApiError
+from ..core.cache_manager import NOAACache
 
 logger = logging.getLogger(__name__)
 
-class HistoricalHTFService:
+class HistoricalHTFFetcher:
     """Service for managing historical high tide flooding data."""
     
-    def __init__(self, cache_dir: Optional[Path] = None):
+    def __init__(self, cache: NOAACache):
         """Initialize the historical HTF service.
         
         Args:
-            cache_dir: Optional custom cache directory. Defaults to Path("data/noaa_cache").
+            cache: NOAACache instance for data caching
         """
+        logger.debug("Initializing HistoricalHTFFetcher")
         self.client = NOAAClient()
-        self.cache = NOAACache(config_dir=cache_dir)
+        self.cache = cache
         
+        # Load NOAA settings for validation
+        self.settings = self.cache.settings['data']['historical']
+    
     def get_station_data(
         self,
         station: Optional[str] = None,
+        year: Optional[int] = None
     ) -> List[Dict]:
         """Get historical HTF data for a station.
         
         Args:
             station: NOAA station identifier. If None, returns data for all stations.
+            year: Specific year to retrieve. If None, returns all available years.
             
         Returns:
             List of annual flood count records containing:
@@ -47,23 +53,51 @@ class HistoricalHTFService:
             - Year
             - Major, moderate, minor flood counts
             - Missing data count
+            
+        Raises:
+            ValueError: If station ID is invalid or year is out of range
+            NOAAApiError: If there is an error fetching data from the API
         """
+        logger.info(f"Fetching historical data for station: {station}, year: {year}")
+        
         if station and not self.cache.validate_station_id(station):
+            logger.error(f"Invalid station ID: {station}")
             raise ValueError(f"Invalid station ID: {station}")
             
+        # Validate year if provided
+        if year is not None:
+            if not (self.settings['start_year'] <= year <= self.settings['end_year']):
+                msg = f"Year {year} out of valid range ({self.settings['start_year']}-{self.settings['end_year']})"
+                logger.error(msg)
+                raise ValueError(msg)
+            
         try:
-            # Fetch all records for the station
-            data = self.client.fetch_annual_flood_counts(station=station)
+            # Check cache first
+            if station:
+                logger.debug(f"Checking cache for station {station}")
+                cached_data = self.cache.get_historical_data(station, year)
+                if cached_data:
+                    logger.debug(f"Found cached data for station {station}")
+                    return cached_data
+            
+            # Fetch from API if not in cache
+            logger.debug(f"Fetching data from NOAA API for station {station}")
+            data = self.client.fetch_annual_flood_counts(station=station, year=year)
             
             # Cache the data
+            logger.debug(f"Caching {len(data)} records for station {station}")
             for record in data:
-                self.cache.save_annual_data(station, record["year"], record, "historical")
+                self.cache.save_historical_data(
+                    station_id=record["stnId"],
+                    year=record["year"],
+                    data=record
+                )
             
             return data
                 
         except NOAAApiError as e:
-            logger.error(f"Error fetching data for station {station}: {str(e)}")
-            raise
+            logger.error(f"Error fetching historical data for station {station}: {str(e)}")
+            raise NOAAApiError(f"Failed to fetch historical data: {str(e)}")
     
     def get_complete_dataset(
         self,
@@ -77,20 +111,28 @@ class HistoricalHTFService:
         Returns:
             Dict mapping station IDs to their historical flood count records
         """
+        logger.info(f"Fetching complete dataset for {len(stations) if stations else 'all'} stations")
+        
         # Get stations list if not provided
         stations = stations or [s['id'] for s in self.cache.get_stations()]
+        logger.debug(f"Processing {len(stations)} stations")
         
         dataset = {}
         for station_id in stations:
             try:
+                logger.debug(f"Fetching data for station {station_id}")
                 station_data = self.get_station_data(station=station_id)
                 if station_data:
+                    logger.debug(f"Got {len(station_data)} records for station {station_id}")
                     dataset[station_id] = station_data
+                else:
+                    logger.warning(f"No data returned for station {station_id}")
                     
             except Exception as e:
                 logger.error(f"Error fetching data for station {station_id}: {e}")
                 continue
                 
+        logger.info(f"Completed dataset fetch. Got data for {len(dataset)} stations")
         return dataset
     
     def get_dataset_status(self) -> Dict:
@@ -102,6 +144,7 @@ class HistoricalHTFService:
             - year_range: Min and max years in dataset
             - completeness: Percentage of expected data points present
         """
+        logger.info("Getting dataset status")
         stations = self.cache.get_stations()
         dataset = self.get_complete_dataset()
         
@@ -113,6 +156,7 @@ class HistoricalHTFService:
         }
         
         if not dataset:
+            logger.warning("No data in dataset")
             return status
             
         # Track years and completeness
@@ -138,6 +182,7 @@ class HistoricalHTFService:
         if total_records > 0:
             status["completeness"] = complete_records / total_records
             
+        logger.info(f"Dataset status: {status}")
         return status
     
     def generate_dataset(

@@ -7,6 +7,17 @@ import os
 # Define Great Lakes region code
 GREAT_LAKES_REGION = 'L'  # The code used for Great Lakes regions in the shoreline data
 
+# Define projections for different regions
+ALASKA_ALBERS = (
+    "+proj=aea +lat_1=55 +lat_2=65 +lat_0=50 +lon_0=-154 "
+    "+x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+)
+
+WEST_COAST_ALBERS = (
+    "+proj=aea +lat_1=34 +lat_2=45.5 +lat_0=40 +lon_0=-120 "
+    "+x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+)
+
 def process_chunk(counties_chunk, ocean_shoreline_union):
     """Process a chunk of counties in parallel."""
     return counties_chunk[counties_chunk.geometry.intersects(ocean_shoreline_union)]
@@ -21,8 +32,18 @@ def find_coastal_counties_for_region(shoreline_gdf: gpd.GeoDataFrame, counties: 
     """
     print(f"\nProcessing region: {region_name}")
     
-    # Ensure same CRS
-    counties = counties.to_crs(shoreline_gdf.crs)
+    # Use appropriate projection based on region
+    if region_name == 'Alaska':
+        print("Using Alaska Albers Equal Area projection...")
+        shoreline_gdf = shoreline_gdf.to_crs(ALASKA_ALBERS)
+        counties = counties.to_crs(ALASKA_ALBERS)
+    elif region_name == 'West_Coast':
+        print("Using West Coast Albers Equal Area projection...")
+        shoreline_gdf = shoreline_gdf.to_crs(WEST_COAST_ALBERS)
+        counties = counties.to_crs(WEST_COAST_ALBERS)
+    else:
+        # For other regions, ensure same CRS
+        counties = counties.to_crs(shoreline_gdf.crs)
     
     # Create shoreline union
     print("Creating shoreline union...")
@@ -43,8 +64,13 @@ def find_coastal_counties_for_region(shoreline_gdf: gpd.GeoDataFrame, counties: 
     coastal_counties = gpd.GeoDataFrame(pd.concat(coastal_chunks, ignore_index=True))
     print(f"Found {len(coastal_counties)} coastal counties in {region_name}")
     
-    # Add region information
-    coastal_counties['region'] = region_name
+    # Add region information (convert West_Coast to West Coast for display)
+    region_display = region_name.replace('_', ' ')
+    coastal_counties['region'] = region_display
+    
+    # Convert back to original CRS if we used a special projection
+    if region_name in ['Alaska', 'West_Coast']:
+        coastal_counties = coastal_counties.to_crs(shoreline_gdf.crs)
     
     return coastal_counties
 
