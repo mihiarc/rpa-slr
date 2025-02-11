@@ -1,5 +1,7 @@
 """
 Main pipeline for assigning HTF data from gauges to counties.
+
+TODO make sure the data gets aggregated to the county by year level
 """
 
 import logging

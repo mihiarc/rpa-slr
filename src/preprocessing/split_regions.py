@@ -1,5 +1,6 @@
 """
 Script to split shoreline shapefiles into specific regional groups.
+Uses region definitions from region_mappings.yaml.
 """
 
 import geopandas as gpd
@@ -7,9 +8,22 @@ from pathlib import Path
 import logging
 import numpy as np
 import pandas as pd
+import yaml
+from shapely.geometry import box
+from src.config import (
+    CONFIG_DIR,
+    PROCESSED_DIR,
+    SHORELINE_DIR
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def load_region_config():
+    """Load region configuration from YAML."""
+    with open(CONFIG_DIR / "region_mappings.yaml") as f:
+        config = yaml.safe_load(f)
+    return config['regions']
 
 def get_feature_centroid(geometry):
     """Get the centroid coordinates of a geometry."""
@@ -25,99 +39,103 @@ def get_feature_centroid(geometry):
         coords = np.vstack(all_coords)
         return np.mean(coords[:, 0]), np.mean(coords[:, 1])
 
-def split_southeast_caribbean(gdf):
-    """Split Southeast Caribbean into South Atlantic states, Puerto Rico, and US Virgin Islands."""
+def create_region_bounds(region_def):
+    """Create a GeoDataFrame with region boundary."""
+    bounds = region_def['bounds']
+    boundary = box(
+        bounds['min_lon'],
+        bounds['min_lat'],
+        bounds['max_lon'],
+        bounds['max_lat']
+    )
+    return gpd.GeoDataFrame({'geometry': [boundary]}, crs="EPSG:4326")
+
+def split_by_region(gdf, region_name, region_def):
+    """Split features by region definition."""
+    logger.info(f"Processing region: {region_name}")
     
-    # Create mask for Florida's Atlantic coast (east of -81.5 degrees)
+    # Filter by state codes
+    state_mask = gdf['FIPS_ALPHA'].isin(region_def['state_codes'])
+    state_features = gdf[state_mask].copy()
+    
+    # Create region boundary
+    bounds_gdf = create_region_bounds(region_def)
+    
+    # Filter by region bounds
+    region_features = gpd.sjoin(
+        state_features,
+        bounds_gdf,
+        how='inner',
+        predicate='intersects'
+    )
+    
+    logger.info(f"Found {len(region_features)} features in {region_name}")
+    return region_features
+
+def split_florida(gdf, regions_config):
+    """Special handling for Florida which spans two regions."""
+    logger.info("Processing Florida features...")
+    
     florida_mask = gdf['FIPS_ALPHA'] == 'FL'
     florida_df = gdf[florida_mask].copy()
     
-    # Split Florida features based on longitude
-    florida_atlantic = []
-    florida_other = []
+    # Get region bounds
+    sa_bounds = create_region_bounds(regions_config['south_atlantic'])
+    gc_bounds = create_region_bounds(regions_config['gulf_coast'])
     
-    for idx, row in florida_df.iterrows():
-        lon, _ = get_feature_centroid(row.geometry)
-        if lon > -81.5:  # East coast of Florida
-            florida_atlantic.append(idx)
-        else:
-            florida_other.append(idx)
+    # Split Florida features by region bounds
+    atlantic_features = gpd.sjoin(
+        florida_df,
+        sa_bounds,
+        how='inner',
+        predicate='intersects'
+    )
     
-    florida_atlantic_df = florida_df.loc[florida_atlantic]
-    logger.info(f"Florida Atlantic coast features: {len(florida_atlantic_df)}")
+    gulf_features = gpd.sjoin(
+        florida_df,
+        gc_bounds,
+        how='inner',
+        predicate='intersects'
+    )
     
-    # South Atlantic states (GA, SC, NC) plus Florida Atlantic coast
-    south_atlantic_base = gdf[gdf['FIPS_ALPHA'].isin(['GA', 'SC', 'NC'])]
-    south_atlantic = pd.concat([south_atlantic_base, florida_atlantic_df])
-    logger.info(f"South Atlantic features (including FL Atlantic): {len(south_atlantic)}")
+    logger.info(f"Florida Atlantic features: {len(atlantic_features)}")
+    logger.info(f"Florida Gulf features: {len(gulf_features)}")
     
-    # Puerto Rico
-    puerto_rico = gdf[gdf['FIPS_ALPHA'] == 'PR']
-    logger.info(f"Puerto Rico features: {len(puerto_rico)}")
-    
-    # US Virgin Islands
-    virgin_islands = gdf[gdf['FIPS_ALPHA'] == 'VI']
-    logger.info(f"US Virgin Islands features: {len(virgin_islands)}")
-    
-    return {
-        'south_atlantic': south_atlantic,
-        'puerto_rico': puerto_rico,
-        'virgin_islands': virgin_islands
-    }
+    return atlantic_features, gulf_features
 
-def split_pacific_islands(gdf):
-    """Split Pacific Islands into Hawaiian Islands and Other Pacific Islands."""
+def split_shoreline():
+    """Split shoreline into regional files."""
+    # Load region configuration
+    regions_config = load_region_config()
     
-    # Hawaiian Islands
-    hawaii = gdf[gdf['FIPS_ALPHA'] == 'HI']
-    logger.info(f"Hawaii features: {len(hawaii)}")
+    # Load shoreline data
+    shoreline_file = PROCESSED_DIR / "shoreline.parquet"
     
-    # Other Pacific Islands (GU, MP, AS, UM)
-    other_pacific = gdf[gdf['FIPS_ALPHA'].isin(['GU', 'MP', 'AS', 'UM'])]
-    logger.info(f"Other Pacific features: {len(other_pacific)}")
+    if not shoreline_file.exists():
+        logger.error(f"Shoreline file not found: {shoreline_file}")
+        raise FileNotFoundError(f"Shoreline file not found: {shoreline_file}")
     
-    return {
-        'hawaii': hawaii,
-        'other_pacific': other_pacific
-    }
-
-def main():
-    # Set up paths
-    input_dir = Path('data/raw/shapefile_shoreline')
-    output_dir = Path('data/processed/regional_shorelines')
-    output_dir.mkdir(parents=True, exist_ok=True)
+    logger.info("Loading shoreline data...")
+    shoreline = gpd.read_parquet(shoreline_file)
     
-    # Process Southeast Caribbean
-    logger.info("Processing Southeast Caribbean shapefile...")
-    se_caribbean_file = input_dir / 'Southeast_Caribbean' / 'Southeast_Caribbean.shp'
-    se_caribbean = gpd.read_file(se_caribbean_file)
-    se_splits = split_southeast_caribbean(se_caribbean)
-    
-    # Process Pacific Islands
-    logger.info("Processing Pacific Islands shapefile...")
-    pacific_file = input_dir / 'Pacific_Islands' / 'Pacific_Islands.shp'
-    pacific = gpd.read_file(pacific_file)
-    pacific_splits = split_pacific_islands(pacific)
-    
-    # Save all splits to parquet files
-    splits = {
-        'south_atlantic_shoreline': se_splits['south_atlantic'],
-        'puerto_rico_shoreline': se_splits['puerto_rico'],
-        'virgin_islands_shoreline': se_splits['virgin_islands'],
-        'hawaii_shoreline': pacific_splits['hawaii'],
-        'other_pacific_shoreline': pacific_splits['other_pacific']
-    }
-    
-    for name, data in splits.items():
-        output_file = output_dir / f"{name}.parquet"
-        data.to_parquet(output_file)
-        logger.info(f"Saved {name} with {len(data)} features to {output_file}")
+    # Process each region
+    for region_name, region_def in regions_config.items():
+        logger.info(f"\nProcessing region: {region_name}")
         
-        # Log FIPS distribution for verification
-        fips_counts = data['FIPS_ALPHA'].value_counts()
-        logger.info(f"FIPS distribution for {name}:")
-        for fips, count in fips_counts.items():
-            logger.info(f"  {fips}: {count} features")
+        # Get region bounds
+        bounds = region_def['bounds']
+        
+        # Filter shoreline for this region
+        region_shoreline = filter_shoreline_for_region(shoreline, bounds)
+        
+        if region_shoreline.empty:
+            logger.warning(f"No shoreline found for region: {region_name}")
+            continue
+        
+        # Save regional shoreline
+        output_file = SHORELINE_DIR / f"{region_name}.parquet"
+        region_shoreline.to_parquet(output_file)
+        logger.info(f"Saved {region_name} shoreline to {output_file}")
 
-if __name__ == '__main__':
-    main() 
+if __name__ == "__main__":
+    split_shoreline() 

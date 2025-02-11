@@ -15,10 +15,10 @@ import seaborn as sns
 
 from src.config import (
     CONFIG_DIR,
-    PROCESSED_DATA_DIR,
-    OUTPUT_DIR,
-    MAPS_OUTPUT_DIR,
-    IMPUTATION_OUTPUT_DIR,
+    PROCESSED_DIR,
+    IMPUTATION_MAPS_DIR,
+    IMPUTATION_DIR,
+    COUNTY_FILE
 )
 
 def calculate_county_coverage(imputation_df: pd.DataFrame) -> pd.DataFrame:
@@ -77,7 +77,7 @@ def plot_south_atlantic_coverage(
     
     # Load counties from main county file and filter for South Atlantic states
     print("\nLoading county geometries...")
-    counties = gpd.read_parquet(PROCESSED_DATA_DIR / "county.parquet")
+    counties = gpd.read_parquet(COUNTY_FILE)
     
     # Get South Atlantic state FIPS codes
     south_atlantic_states = {'12': 'FL', '13': 'GA', '37': 'NC', '45': 'SC'}
@@ -301,7 +301,7 @@ def plot_south_atlantic_coverage(
 def main():
     """Generate South Atlantic imputation coverage visualization."""
     # Find most recent South Atlantic imputation file
-    imputation_files = list(IMPUTATION_OUTPUT_DIR.glob("imputation_structure_south_atlantic_*.parquet"))
+    imputation_files = list(IMPUTATION_DIR.glob("imputation_structure_south_atlantic_*.parquet"))
     if not imputation_files:
         print("No South Atlantic imputation structure files found")
         return
@@ -309,7 +309,7 @@ def main():
     imputation_file = sorted(imputation_files)[-1]  # Get most recent
     
     # Set up output path
-    output_dir = MAPS_OUTPUT_DIR / "imputation"
+    output_dir = IMPUTATION_MAPS_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "south_atlantic_coverage.png"
     

@@ -30,81 +30,97 @@ The module is critical for:
 import numpy as np
 from typing import List, Dict, Literal
 import logging
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
 WeightMethod = Literal['idw', 'gaussian', 'linear', 'hybrid']
 
 class WeightCalculator:
-    """Calculates weights for gauge stations based on distance."""
+    """Calculate weights for tide gauge stations."""
     
-    def __init__(self):
-        pass
-    
-    def calculate_for_points(self, point_data: List[Dict], available_gauges: set) -> List[Dict]:
+    def __init__(self, 
+                 max_distance_meters: float = 100000,  # 100km max distance
+                 power: float = 2,  # inverse distance power
+                 min_weight: float = 0.1):
         """
-        Calculate inverse distance weights for each point's nearest available gauges.
-        Selects up to 2 nearest gauges that have HTF data available.
-        Preserves all points, marking those without HTF data coverage.
+        Initialize weight calculator.
         
         Args:
-            point_data: List of dictionaries containing point and gauge information
-            available_gauges: Set of gauge IDs that have HTF data
+            max_distance_meters: Maximum distance to consider for weights
+            power: Power parameter for inverse distance weighting
+            min_weight: Minimum weight to assign
+        """
+        self.max_distance = max_distance_meters
+        self.power = power
+        self.min_weight = min_weight
+        
+        logger.info(f"Initialized WeightCalculator")
+        logger.info(f"Max distance: {self.max_distance/1000:.1f}km")
+        logger.info(f"IDW power: {self.power}")
+        
+    def _calculate_single_mapping_weights(self, mapping: Dict) -> Dict:
+        """
+        Calculate weights for a single reference point mapping.
+        
+        Args:
+            mapping: Dictionary containing reference point to gauge mappings
             
         Returns:
-            List of dictionaries with weights and coverage information added
+            Updated mapping dictionary with calculated weights
         """
-        weighted_points = []
+        distances = np.array([m['distance_meters'] for m in mapping['mappings']])
         
-        for point in point_data:
-            # Find the two nearest gauges that have HTF data
-            valid_gauges = []
-            valid_distances = []
+        # Filter by max distance
+        valid_mask = distances <= self.max_distance
+        if not any(valid_mask):
+            # If no stations within max distance, use all stations
+            valid_mask = np.ones_like(distances, dtype=bool)
             
-            for gauge_id, distance in zip(point['backup_gauge_ids'], point['backup_distances']):
-                if gauge_id in available_gauges:
-                    valid_gauges.append(gauge_id)
-                    valid_distances.append(distance)
-                    if len(valid_gauges) == 2:  # We have enough gauges
-                        break
-            
-            # Create base point data that we'll keep regardless of gauge coverage
-            point_data_out = {
-                'county_fips': point['county_fips'],
-                'county_name': point['county_name'],
-                'state_fips': point['state_fips'],
-                'geometry': point['geometry'],
-                'n_gauges': len(valid_gauges),
-                'total_weight': 0.0,  # Will be updated if we have valid gauges
-                'has_htf_data': len(valid_gauges) > 0,
-                'nearest_gauge_id': point['backup_gauge_ids'][0],  # Keep track of nearest gauge even if no HTF data
-                'nearest_gauge_distance': point['backup_distances'][0],
-                'nearest_gauge_has_htf': point['backup_gauge_ids'][0] in available_gauges
-            }
-            
-            # If we have valid gauges, calculate weights
-            if valid_gauges:
-                weights = [1 / (d ** 2) for d in valid_distances]
-                total_weight = sum(weights)
-                weights = [w / total_weight for w in weights]
-                point_data_out['total_weight'] = 1.0
-                
-                # Add gauge information
-                for i, (gauge_id, distance, weight) in enumerate(zip(valid_gauges, valid_distances, weights), 1):
-                    point_data_out.update({
-                        f'gauge_id_{i}': gauge_id,
-                        f'distance_{i}': distance,
-                        f'weight_{i}': weight
-                    })
-            
-            # Always set gauge_id_2 fields, even if None
-            if len(valid_gauges) < 2:
-                point_data_out.update({
-                    'gauge_id_2': None,
-                    'distance_2': None,
-                    'weight_2': 0.0
-                })
-            
-            weighted_points.append(point_data_out)
+        valid_distances = distances[valid_mask]
         
-        return weighted_points 
+        # Calculate inverse distance weights
+        weights = 1 / (valid_distances ** self.power)
+        
+        # Normalize weights to sum to 1
+        weights = weights / np.sum(weights)
+        
+        # Apply minimum weight threshold
+        weights = np.maximum(weights, self.min_weight)
+        weights = weights / np.sum(weights)  # Renormalize
+        
+        # Update mapping with weights
+        valid_mappings = [m for i, m in enumerate(mapping['mappings']) if valid_mask[i]]
+        for m, w in zip(valid_mappings, weights):
+            m['weight'] = float(w)
+            
+        mapping['mappings'] = valid_mappings
+        return mapping
+    
+    def calculate_weights(self, mappings: List[Dict]) -> List[Dict]:
+        """
+        Calculate weights for all reference point mappings.
+        
+        Args:
+            mappings: List of mapping dictionaries
+            
+        Returns:
+            Updated mappings with calculated weights
+        """
+        if not mappings:
+            return []
+            
+        logger.info(f"Processing {len(mappings)} mappings")
+        
+        # Process all mappings sequentially with progress bar
+        weighted_mappings = []
+        for mapping in tqdm(mappings, desc="Calculating weights"):
+            try:
+                weighted_mapping = self._calculate_single_mapping_weights(mapping)
+                weighted_mappings.append(weighted_mapping)
+            except Exception as e:
+                logger.error(f"Error processing mapping: {str(e)}")
+                continue
+        
+        logger.info(f"Completed weight calculation for {len(weighted_mappings)} mappings")
+        return weighted_mappings 

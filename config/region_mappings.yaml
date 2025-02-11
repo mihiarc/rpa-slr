@@ -73,7 +73,7 @@ regions:
       min_lat: 32.0
       max_lat: 49.0
       min_lon: -125.0
-      max_lon: -117.0
+      max_lon: -122.0
 
   alaska:
     name: alaska

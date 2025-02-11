@@ -18,10 +18,10 @@ import os
 
 from src.config import (
     CONFIG_DIR,
-    PROCESSED_DATA_DIR,
-    OUTPUT_DIR,
-    MAPS_OUTPUT_DIR,
-    IMPUTATION_OUTPUT_DIR,
+    PROCESSED_DIR,
+    IMPUTATION_MAPS_DIR,
+    IMPUTATION_DIR,
+    COUNTY_FILE,
     COASTAL_COUNTIES_FILE,
     REFERENCE_POINTS_FILE
 )
@@ -325,26 +325,25 @@ def plot_imputation_structure(
     logger.info(f"Saved map to {output_path}")
     return output_path
 
-def generate_imputation_report(
-    imputation_dir: Path = IMPUTATION_OUTPUT_DIR,
-    output_dir: Path = MAPS_OUTPUT_DIR / "imputation",
-    reference_points_file: Path = REFERENCE_POINTS_FILE,
-    counties_file: Path = COASTAL_COUNTIES_FILE):
+def generate_report(
+    imputation_dir: Path = IMPUTATION_DIR,
+    output_dir: Path = IMPUTATION_MAPS_DIR,
+    region: str = None
+):
     """Generate visualization report for imputation structure.
     
     Args:
         imputation_dir: Directory containing imputation structure files
         output_dir: Directory to save output maps
-        reference_points_file: Path to reference points file
-        counties_file: Path to coastal counties file
+        region: Specific region to generate report for
     """
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Load reference data
     logger.info("Loading reference data...")
-    reference_points = gpd.read_parquet(reference_points_file)
-    counties = gpd.read_parquet(counties_file)
+    reference_points = gpd.read_parquet(REFERENCE_POINTS_FILE)
+    counties = gpd.read_parquet(COASTAL_COUNTIES_FILE)
     
     # Find most recent imputation file for each region
     imputation_files = list(imputation_dir.glob("imputation_structure_*.parquet"))
@@ -387,7 +386,7 @@ def main():
     )
     
     try:
-        generate_imputation_report()
+        generate_report()
         logger.info("Completed imputation structure report generation")
     except Exception as e:
         logger.error(f"Error generating report: {str(e)}")

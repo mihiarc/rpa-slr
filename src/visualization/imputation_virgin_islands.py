@@ -15,10 +15,10 @@ import seaborn as sns
 
 from src.config import (
     CONFIG_DIR,
-    PROCESSED_DATA_DIR,
-    OUTPUT_DIR,
-    MAPS_OUTPUT_DIR,
-    IMPUTATION_OUTPUT_DIR,
+    PROCESSED_DIR,
+    IMPUTATION_MAPS_DIR,
+    IMPUTATION_DIR,
+    COUNTY_FILE
 )
 
 def calculate_county_coverage(imputation_df: pd.DataFrame) -> pd.DataFrame:
@@ -77,7 +77,7 @@ def plot_virgin_islands_coverage(
     
     # Load counties from main county file and filter for Virgin Islands
     print("\nLoading county geometries...")
-    counties = gpd.read_parquet(PROCESSED_DATA_DIR / "county.parquet")
+    counties = gpd.read_parquet(COUNTY_FILE)
     
     # Get Virgin Islands state FIPS code
     virgin_islands_fips = '78'  # Virgin Islands territory FIPS code
@@ -302,7 +302,7 @@ def plot_virgin_islands_coverage(
 def main():
     """Generate Virgin Islands imputation coverage visualization."""
     # Find most recent Virgin Islands imputation file
-    imputation_files = list(IMPUTATION_OUTPUT_DIR.glob("imputation_structure_virgin_islands_*.parquet"))
+    imputation_files = list(IMPUTATION_DIR.glob("imputation_structure_virgin_islands_*.parquet"))
     if not imputation_files:
         print("No Virgin Islands imputation structure files found")
         return
@@ -310,7 +310,7 @@ def main():
     imputation_file = sorted(imputation_files)[-1]  # Get most recent
     
     # Set up output path
-    output_dir = MAPS_OUTPUT_DIR / "imputation"
+    output_dir = IMPUTATION_MAPS_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "virgin_islands_coverage.png"
     

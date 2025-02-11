@@ -34,6 +34,7 @@ import pyproj
 from pathlib import Path
 from src.config import CONFIG_DIR
 import yaml
+from shapely.geometry import box
 
 logger = logging.getLogger(__name__)
 
@@ -41,31 +42,167 @@ class NearestGaugeFinder:
     """Finds nearest gauge stations for reference points."""
     
     def __init__(self, 
-                 target_epsg: int = 5070,  # NAD83 / Conus Albers (equal area)
-                 fips_config: Path = CONFIG_DIR / "fips_mappings.yaml"):
-        self.target_epsg = target_epsg
-        
+                 region_config: Path = CONFIG_DIR / "region_mappings.yaml"):
         # Load region definitions
-        with open(fips_config) as f:
-            config = yaml.safe_load(f)
-            self.regions = config['regions']
-    
-    def _project_points(self,
-                      reference_points: gpd.GeoDataFrame,
-                      gauge_stations: gpd.GeoDataFrame) -> Tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+        with open(region_config) as f:
+            self.region_config = yaml.safe_load(f)
+            
+        # Initialize region-specific projections
+        self.region_projections = {
+            'alaska': "+proj=aea +lat_1=55 +lat_2=65 +lat_0=50 +lon_0=-154 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs",
+            'hawaii': "+proj=aea +lat_1=8 +lat_2=18 +lat_0=13 +lon_0=-157 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs",
+            'pacific_islands': "+proj=aea +lat_1=0 +lat_2=20 +lat_0=10 +lon_0=160 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs",
+            'puerto_rico': "+proj=aea +lat_1=17 +lat_2=19 +lat_0=18 +lon_0=-66.5 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs",
+            'virgin_islands': "+proj=aea +lat_1=17 +lat_2=19 +lat_0=18 +lon_0=-64.75 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs",
+            'west_coast': "+proj=aea +lat_1=34 +lat_2=45.5 +lat_0=40 +lon_0=-120 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs",
+            # CONUS regions use standard Albers Equal Area
+            'default': "EPSG:5070"  # NAD83 / Conus Albers
+        }
+        
+        # Load tide station configurations
+        self.tide_stations_dir = CONFIG_DIR / "tide_stations"
+        self._load_tide_station_configs()
+        
+    def _load_tide_station_configs(self):
+        """Load tide station configurations for each region."""
+        self.region_stations = {}
+        self.station_metadata = {}
+        
+        for region in self.region_config['regions']:
+            station_file = self.tide_stations_dir / f"{region}_tide_stations.yaml"
+            if station_file.exists():
+                with open(station_file) as f:
+                    config = yaml.safe_load(f)
+                    
+                    # Store metadata
+                    self.station_metadata[region] = config.get('metadata', {})
+                    
+                    # Store station information
+                    stations = {}
+                    for station_id, info in config.get('stations', {}).items():
+                        stations[station_id] = {
+                            'id': station_id,
+                            'name': info['name'],
+                            'latitude': info['location']['lat'],
+                            'longitude': info['location']['lon'],
+                            'sub_region': info.get('region', '')
+                        }
+                    self.region_stations[region] = stations
+                    
+                    logger.info(f"Loaded {len(stations)} stations for region {region}")
+                    logger.info(f"Source: {self.station_metadata[region].get('source', 'Unknown')}")
+                    logger.info(f"Last updated: {self.station_metadata[region].get('last_updated', 'Unknown')}")
+            else:
+                logger.warning(f"No tide station configuration found for region: {region}")
+                self.region_stations[region] = {}
+                self.station_metadata[region] = {}
+
+    def _filter_by_region(self,
+                         reference_points: gpd.GeoDataFrame,
+                         gauge_stations: gpd.GeoDataFrame,
+                         region: str) -> Tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
         """
-        Project points to target CRS for accurate distance calculations.
+        Filter both reference points and gauge stations to ensure they belong to the same region.
         
         Args:
             reference_points: GeoDataFrame of reference points
             gauge_stations: GeoDataFrame of gauge stations
+            region: Region identifier
+            
+        Returns:
+            Tuple of filtered (reference_points, gauge_stations)
+        """
+        # Get region definition
+        if region not in self.region_config['regions']:
+            raise ValueError(f"Unknown region: {region}")
+            
+        region_def = self.region_config['regions'][region]
+        
+        # Get state codes for the region
+        state_codes = region_def['state_codes']
+        
+        # Filter reference points by state codes
+        filtered_points = reference_points[
+            reference_points['state_code'].isin(state_codes)
+        ].copy()
+        
+        # Get region bounds
+        bounds = region_def['bounds']
+        bounds_polygon = box(
+            bounds['min_lon'],
+            bounds['min_lat'],
+            bounds['max_lon'],
+            bounds['max_lat']
+        )
+        bounds_gdf = gpd.GeoDataFrame({'geometry': [bounds_polygon]}, crs="EPSG:4326")
+        
+        # Further filter points by region bounds
+        filtered_points = gpd.sjoin(
+            filtered_points,
+            bounds_gdf,
+            how='inner',
+            predicate='within'
+        )
+        
+        # Get station IDs for the region
+        region_station_ids = set(self.region_stations[region].keys())
+        
+        # Filter gauge stations by region's station IDs and bounds
+        filtered_stations = gauge_stations[
+            gauge_stations['station_id'].isin(region_station_ids)
+        ].copy()
+        
+        # Add sub-region information to filtered stations
+        filtered_stations['sub_region'] = filtered_stations['station_id'].map(
+            lambda x: self.region_stations[region].get(x, {}).get('sub_region', '')
+        )
+        
+        # Add station names for better logging
+        filtered_stations['station_name'] = filtered_stations['station_id'].map(
+            lambda x: self.region_stations[region].get(x, {}).get('name', '')
+        )
+        
+        filtered_stations = gpd.sjoin(
+            filtered_stations,
+            bounds_gdf,
+            how='inner',
+            predicate='within'
+        )
+        
+        if filtered_points.empty or filtered_stations.empty:
+            logger.warning(f"No data found for region {region} after filtering")
+        else:
+            logger.info(f"Found {len(filtered_stations)} stations in region {region}")
+            for sub_region in filtered_stations['sub_region'].unique():
+                if sub_region:
+                    count = len(filtered_stations[filtered_stations['sub_region'] == sub_region])
+                    logger.info(f"  Sub-region {sub_region}: {count} stations")
+            
+        return filtered_points, filtered_stations
+
+    def _get_region_projection(self, region: str) -> str:
+        """Get the appropriate projection for a region."""
+        return self.region_projections.get(region, self.region_projections['default'])
+        
+    def _project_points(self,
+                      reference_points: gpd.GeoDataFrame,
+                      gauge_stations: gpd.GeoDataFrame,
+                      region: str) -> Tuple[gpd.GeoDataFrame, gpd.GeoDataFrame]:
+        """
+        Project points to region-appropriate CRS for accurate distance calculations.
+        
+        Args:
+            reference_points: GeoDataFrame of reference points
+            gauge_stations: GeoDataFrame of gauge stations
+            region: Region identifier
             
         Returns:
             Tuple of projected (reference_points, gauge_stations)
         """
+        projection = self._get_region_projection(region)
         return (
-            reference_points.to_crs(epsg=self.target_epsg),
-            gauge_stations.to_crs(epsg=self.target_epsg)
+            reference_points.to_crs(projection),
+            gauge_stations.to_crs(projection)
         )
     
     def _extract_coordinates(self,
@@ -135,74 +272,89 @@ class NearestGaugeFinder:
 
     def find_nearest(self,
                     reference_points: gpd.GeoDataFrame,
-                    gauge_stations: gpd.GeoDataFrame) -> List[dict]:
+                    gauge_stations: gpd.GeoDataFrame,
+                    region: str) -> List[dict]:
         """
-        Find nearest gauge stations for each reference point.
-        Gets 4 nearest initially to allow for fallbacks if some don't have HTF data.
-        Will return data for 2 nearest gauges that have HTF data.
+        Find nearest gauge stations for each reference point within the same region and subregion.
         
         Args:
             reference_points: GeoDataFrame of reference points
             gauge_stations: GeoDataFrame of gauge stations
+            region: Region identifier
             
         Returns:
-            List of dictionaries containing point data and nearest gauge information
+            List of dictionaries containing point-to-gauge mappings
         """
-        gauge_data = []
+        # Filter by region first
+        ref_points, stations = self._filter_by_region(reference_points, gauge_stations, region)
         
-        # Process each reference point
-        for i in tqdm(range(len(reference_points)), desc="Finding nearest gauges"):
-            point = reference_points.iloc[i]
-            point_data = {
-                'county_fips': point['county_fips'],
-                'county_name': point['county_name'],
-                'state_fips': point['state_fips'],
-                'geometry': point.geometry
-            }
+        if ref_points.empty or stations.empty:
+            return []
             
-            # Filter gauge stations to the point's region
-            regional_gauges = self._filter_gauges_by_region(gauge_stations, point['state_fips'])
-            
-            if len(regional_gauges) == 0:
-                # If no gauges in region, fall back to all gauges but log a warning
-                print(f"Warning: No gauge stations found in region for {point['county_name']}, {point['state_fips']}")
-                regional_gauges = gauge_stations
-            
-            # Project points for distance calculation
-            point_proj, gauges_proj = self._project_points(
-                gpd.GeoDataFrame([point], crs=reference_points.crs),
-                regional_gauges
-            )
-            
-            # Extract coordinates
-            point_coords, gauge_coords = self._extract_coordinates(point_proj, gauges_proj)
-            
-            # Build KDTree for efficient search
-            tree = cKDTree(gauge_coords)
-            
-            # Find 4 nearest gauges (to allow for fallbacks)
-            distances, indices = tree.query(point_coords, k=min(4, len(regional_gauges)))
-            
-            # Flatten single-point results
-            if len(point_coords) == 1:
-                distances = distances[0]
-                indices = indices[0]
-            
-            # Store gauge options with their IDs and distances
-            backup_gauge_ids = []
-            backup_distances = []
-            
-            for j in range(len(indices)):
-                gauge = regional_gauges.iloc[indices[j]]
-                backup_gauge_ids.append(gauge['station_id'])
-                backup_distances.append(distances[j])
-            
-            point_data['backup_gauge_ids'] = backup_gauge_ids
-            point_data['backup_distances'] = backup_distances
-            
-            gauge_data.append(point_data)
+        # Project coordinates
+        ref_points, stations = self._project_points(ref_points, stations, region)
         
-        return gauge_data 
+        # Process each subregion separately
+        all_mappings = []
+        
+        # Get unique subregions (including empty string for stations without subregion)
+        subregions = stations['sub_region'].unique()
+        
+        for subregion in subregions:
+            # Filter stations for this subregion
+            subregion_stations = stations[stations['sub_region'] == subregion].copy()
+            
+            if len(subregion_stations) == 0:
+                continue
+                
+            # Extract coordinates for KD-tree
+            ref_coords, station_coords = self._extract_coordinates(ref_points, subregion_stations)
+            
+            # Build KD-tree for efficient nearest neighbor search
+            tree = cKDTree(station_coords)
+            
+            # Find k nearest neighbors for each reference point
+            # k is min(3, number of available stations) to ensure we don't exceed available stations
+            k = min(3, len(subregion_stations))
+            distances, indices = tree.query(ref_coords, k=k)
+            
+            # Convert to meters and create mapping dictionaries
+            for i, (dist, idx) in enumerate(zip(distances, indices)):
+                point_mappings = {
+                    'reference_point_id': ref_points.iloc[i].name,
+                    'county_fips': ref_points.iloc[i]['county_fips'],
+                    'region': region,
+                    'mappings': []
+                }
+                
+                # Handle case where k=1 (only one station available)
+                if not isinstance(dist, np.ndarray):
+                    dist = [dist]
+                    idx = [idx]
+                    
+                for d, j in zip(dist, idx):
+                    station = subregion_stations.iloc[j]
+                    point_mappings['mappings'].append({
+                        'station_id': station['station_id'],
+                        'station_name': station['station_name'],
+                        'sub_region': station['sub_region'],
+                        'distance_meters': float(d),
+                        'weight': 1.0  # Initial weight, will be adjusted by weight calculator
+                    })
+                
+                all_mappings.append(point_mappings)
+        
+        # Log summary statistics
+        if all_mappings:
+            logger.info(f"\nGenerated mappings for region {region}:")
+            for subregion in subregions:
+                subregion_name = subregion if subregion else 'main'
+                subregion_mappings = [m for m in all_mappings 
+                                    if any(sm['sub_region'] == subregion for sm in m['mappings'])]
+                if subregion_mappings:
+                    logger.info(f"  Subregion {subregion_name}: {len(subregion_mappings)} reference point mappings")
+                    
+        return all_mappings
 
 def process_spatial_data(
     region: str,

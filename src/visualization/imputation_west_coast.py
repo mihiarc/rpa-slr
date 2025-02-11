@@ -15,10 +15,9 @@ import seaborn as sns
 
 from src.config import (
     CONFIG_DIR,
-    PROCESSED_DATA_DIR,
-    OUTPUT_DIR,
-    MAPS_OUTPUT_DIR,
-    IMPUTATION_OUTPUT_DIR,
+    PROCESSED_DIR,
+    IMPUTATION_MAPS_DIR,
+    IMPUTATION_DIR
 )
 
 def calculate_county_coverage(imputation_df: pd.DataFrame) -> pd.DataFrame:
@@ -77,7 +76,7 @@ def plot_west_coast_coverage(
     
     # Load counties from main county file and filter for West Coast states
     print("\nLoading county geometries...")
-    counties = gpd.read_parquet(PROCESSED_DATA_DIR / "county.parquet")
+    counties = gpd.read_parquet(PROCESSED_DIR / "county.parquet")
     
     # Get West Coast state FIPS codes
     west_coast_states = {'06': 'CA', '41': 'OR', '53': 'WA'}
@@ -309,7 +308,7 @@ def plot_west_coast_coverage(
 def main():
     """Generate West Coast imputation coverage visualization."""
     # Find most recent West Coast imputation file
-    imputation_files = list(IMPUTATION_OUTPUT_DIR.glob("imputation_structure_west_coast_*.parquet"))
+    imputation_files = list(IMPUTATION_DIR.glob("imputation_structure_west_coast_*.parquet"))
     if not imputation_files:
         print("No West Coast imputation structure files found")
         return
@@ -317,7 +316,7 @@ def main():
     imputation_file = sorted(imputation_files)[-1]  # Get most recent
     
     # Set up output path
-    output_dir = MAPS_OUTPUT_DIR / "imputation"
+    output_dir = IMPUTATION_MAPS_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "west_coast_coverage.png"
     

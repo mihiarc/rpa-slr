@@ -15,10 +15,9 @@ import seaborn as sns
 
 from src.config import (
     CONFIG_DIR,
-    PROCESSED_DATA_DIR,
-    OUTPUT_DIR,
-    MAPS_OUTPUT_DIR,
-    IMPUTATION_OUTPUT_DIR,
+    PROCESSED_DIR,
+    IMPUTATION_MAPS_DIR,
+    IMPUTATION_DIR,
     COASTAL_COUNTIES_FILE,
     REFERENCE_POINTS_FILE
 )
@@ -74,7 +73,7 @@ def plot_hawaii_coverage(
     # Load data
     print("Loading data...")
     imputation_df = pd.read_parquet(imputation_file)
-    counties = gpd.read_parquet(counties_file)
+    counties = gpd.read_parquet(PROCESSED_DIR / "county.parquet")
     
     # Filter for Hawaii
     region_counties = counties[counties['region'] == 'hawaii'].copy()
@@ -287,7 +286,7 @@ def plot_hawaii_coverage(
 def main():
     """Generate Hawaii imputation coverage visualization."""
     # Find most recent Hawaii imputation file
-    imputation_files = list(IMPUTATION_OUTPUT_DIR.glob("imputation_structure_hawaii_*.parquet"))
+    imputation_files = list(IMPUTATION_DIR.glob("imputation_structure_hawaii_*.parquet"))
     if not imputation_files:
         print("No Hawaii imputation structure files found")
         return
@@ -295,7 +294,7 @@ def main():
     imputation_file = sorted(imputation_files)[-1]  # Get most recent
     
     # Set up output path
-    output_dir = MAPS_OUTPUT_DIR / "imputation"
+    output_dir = IMPUTATION_MAPS_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "hawaii_coverage.png"
     

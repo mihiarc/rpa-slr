@@ -15,10 +15,10 @@ import seaborn as sns
 
 from src.config import (
     CONFIG_DIR,
-    PROCESSED_DATA_DIR,
-    OUTPUT_DIR,
-    MAPS_OUTPUT_DIR,
-    IMPUTATION_OUTPUT_DIR,
+    PROCESSED_DIR,
+    IMPUTATION_MAPS_DIR,
+    IMPUTATION_DIR,
+    COUNTY_FILE
 )
 
 def calculate_county_coverage(imputation_df: pd.DataFrame) -> pd.DataFrame:
@@ -77,7 +77,7 @@ def plot_puerto_rico_coverage(
     
     # Load counties from main county file and filter for Puerto Rico
     print("\nLoading county geometries...")
-    counties = gpd.read_parquet(PROCESSED_DATA_DIR / "county.parquet")
+    counties = gpd.read_parquet(COUNTY_FILE)
     
     # Get Puerto Rico state FIPS code
     puerto_rico_fips = '72'  # Puerto Rico state FIPS code
@@ -317,7 +317,7 @@ def plot_puerto_rico_coverage(
 def main():
     """Generate Puerto Rico imputation coverage visualization."""
     # Find most recent Puerto Rico imputation file
-    imputation_files = list(IMPUTATION_OUTPUT_DIR.glob("imputation_structure_puerto_rico_*.parquet"))
+    imputation_files = list(IMPUTATION_DIR.glob("imputation_structure_puerto_rico_*.parquet"))
     if not imputation_files:
         print("No Puerto Rico imputation structure files found")
         return
@@ -325,7 +325,7 @@ def main():
     imputation_file = sorted(imputation_files)[-1]  # Get most recent
     
     # Set up output path
-    output_dir = MAPS_OUTPUT_DIR / "imputation"
+    output_dir = IMPUTATION_MAPS_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / "puerto_rico_coverage.png"
     
