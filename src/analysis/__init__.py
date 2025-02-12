@@ -1,11 +1,15 @@
+"""Analysis module for HTF data.
+
+This module provides tools for analyzing HTF data, including:
+- Spatial analysis of flood patterns
+- Temporal trend analysis
+- Report generation
 """
-NOAA Data Analysis Package.
 
-This package provides tools for analyzing NOAA high tide flooding data quality
-and characteristics.
-"""
+from .htf_spatial_analysis import analyze_flood_data
+from .htf_temporal_analysis import analyze_temporal_trends
 
-from .data_quality import DataQualityAnalyzer
-from .cli import main as cli_main
-
-__all__ = ['DataQualityAnalyzer', 'cli_main'] 
+__all__ = [
+    'analyze_flood_data',
+    'analyze_temporal_trends'
+] 

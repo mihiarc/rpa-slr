@@ -24,7 +24,7 @@ def setup_logging(verbose: bool = False):
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format='%(asctime)s - %(levelname)s - %(message)s'
     )
 
 def parse_args():
@@ -110,34 +110,47 @@ def main():
     try:
         # Initialize components
         cache = NOAACache(config_dir=config_dir)
-        fetcher = ProjectedHTFFetcher(cache)
-        processor = ProjectedHTFProcessor(config_dir=config_dir)
+        fetcher = ProjectedHTFFetcher(cache=cache, region=args.region)
         
-        # Fetch and process data
-        logger.info(f"Processing projected data for region: {args.region}")
-        df = processor.process_region(
-            args.region,
-            args.start_decade,
-            args.end_decade
+        # Get dataset status
+        status = fetcher.get_dataset_status()
+        logger.info(f"\nDataset Status:")
+        logger.info(f"Region: {status['region']}")
+        logger.info(f"Station Count: {status['station_count']}")
+        logger.info(f"Decade Range: {status['decade_range']}")
+        logger.info(f"Completeness: {status['completeness']*100:.1f}%")
+        
+        # Log cache statistics
+        cache_stats = status['cache_stats']
+        total_requests = cache_stats['hits'] + cache_stats['misses']
+        if total_requests > 0:
+            hit_rate = (cache_stats['hits'] / total_requests) * 100
+            logger.info(f"\nCache Statistics:")
+            logger.info(f"Cache Hits: {cache_stats['hits']}")
+            logger.info(f"Cache Misses: {cache_stats['misses']}")
+            logger.info(f"Cache Errors: {cache_stats['errors']}")
+            logger.info(f"Cache Hit Rate: {hit_rate:.1f}%")
+        
+        # Get regional dataset
+        dataset = fetcher.get_regional_dataset(
+            start_decade=args.start_decade,
+            end_decade=args.end_decade
         )
         
-        if df.empty:
+        if not dataset:
             logger.warning("No data to output")
             sys.exit(0)
         
         # Create output directory
         args.output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Save output
-        output_file = args.output_dir / f"projected_htf_{args.region}"
-        if args.format == 'csv':
-            output_path = output_file.with_suffix('.csv')
-            df.to_csv(output_path, index=False)
-        else:
-            output_path = output_file.with_suffix('.parquet')
-            df.to_parquet(output_path, index=False)
+        # Generate and save dataset
+        output_file = fetcher.generate_dataset(
+            output_path=args.output_dir,
+            stations=list(dataset.keys())
+        )
             
-        logger.info(f"Output saved to: {output_path}")
+        logger.info(f"\nOutput saved to: {output_file}")
         
     except Exception as e:
         logger.error(f"Error processing data: {e}")

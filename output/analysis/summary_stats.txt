@@ -1,0 +1,16 @@
+Overall Statistics (1970-Present):
+Total number of counties: 318
+Year range: 1970 to 2024
+Number of regions: 9
+
+Top 10 Counties by Recent Flooding (2015-2019):
+County 15001: 20.22 average flood days (Region: hawaii)
+County 15009: 13.10 average flood days (Region: hawaii)
+County 48201: 12.79 average flood days (Region: gulf_coast)
+County 15005: 12.43 average flood days (Region: hawaii)
+County 48071: 12.39 average flood days (Region: gulf_coast)
+County 22103: 12.26 average flood days (Region: gulf_coast)
+County 22095: 12.20 average flood days (Region: gulf_coast)
+County 22105: 12.17 average flood days (Region: gulf_coast)
+County 28045: 12.16 average flood days (Region: gulf_coast)
+County 22071: 12.09 average flood days (Region: gulf_coast)

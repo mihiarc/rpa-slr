@@ -1,15 +1,19 @@
 """
-Script to create visualizations for historical and projected HTF datasets.
+Script to generate visualizations for HTF flood data analysis.
 
-This script generates various plots to visualize trends and patterns in the HTF data,
-saving them to an output directory.
+This script creates maps and plots focusing on flood patterns and severity.
 """
 
 import pandas as pd
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 from pathlib import Path
 import logging
+from typing import Tuple, List
+import numpy as np
 
 # Configure logging
 logging.basicConfig(
@@ -18,121 +22,185 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Set style for all plots
-plt.style.use('seaborn-v0_8')  # Use the updated seaborn style name
-sns.set_palette("husl")
+def get_region_projection(region: str) -> ccrs.Projection:
+    """Get the appropriate cartopy projection for a region."""
+    projections = {
+        'alaska': ccrs.AlbersEqualArea(central_longitude=-160),
+        'hawaii': ccrs.AlbersEqualArea(central_longitude=-157),
+        'pacific_islands': ccrs.AlbersEqualArea(central_longitude=145),
+        'puerto_rico': ccrs.AlbersEqualArea(central_longitude=-66),
+        'virgin_islands': ccrs.AlbersEqualArea(central_longitude=-64.5)
+    }
+    return projections.get(region, ccrs.AlbersEqualArea(central_longitude=-96))
 
-def setup_output_dir(base_dir: str = "output/visualizations") -> Path:
-    """Create and return output directory for plots."""
-    output_dir = Path(base_dir)
+def plot_regional_flood_map(region: str, htf_df: pd.DataFrame, 
+                          counties: gpd.GeoDataFrame, output_dir: Path) -> None:
+    """Create a choropleth map of flood days for a region."""
+    region_df = htf_df[htf_df['region'] == region].copy()
+    region_counties = counties[counties['region'] == region].copy()
+    
+    # Merge flood data with county geometries
+    merged = region_counties.merge(region_df, on='county_fips')
+    
+    # Create figure with appropriate projection
+    proj = get_region_projection(region)
+    fig, ax = plt.subplots(figsize=(12, 8), 
+                          subplot_kw={'projection': proj})
+    
+    # Add map features
+    ax.add_feature(cfeature.COASTLINE)
+    ax.add_feature(cfeature.STATES)
+    
+    # Plot flood days
+    merged.plot(column='total_flood_days', 
+               ax=ax,
+               legend=True,
+               legend_kwds={'label': 'Total Flood Days'},
+               cmap='YlOrRd')
+    
+    # Adjust title and layout
+    plt.title(f'Total Flood Days - {region.replace("_", " ").title()}')
+    plt.tight_layout()
+    
+    # Save figure
+    output_file = output_dir / f'flood_days_{region}.png'
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
+
+def plot_flood_severity_distribution(htf_df: pd.DataFrame, 
+                                   output_dir: Path) -> None:
+    """Create plots showing the distribution of flood severity."""
+    # Calculate flood severity percentages
+    severity_data = pd.DataFrame({
+        'Minor': htf_df['minor_flood_days'].sum(),
+        'Moderate': htf_df['moderate_flood_days'].sum(),
+        'Major': htf_df['major_flood_days'].sum()
+    }, index=['Flood Days'])
+    
+    # Create stacked bar plot
+    ax = severity_data.T.plot(kind='bar', figsize=(10, 6))
+    plt.title('Distribution of Flood Severity')
+    plt.xlabel('Severity Level')
+    plt.ylabel('Number of Flood Days')
+    
+    # Add percentage labels
+    total = severity_data.sum().sum()
+    for i, v in enumerate(severity_data.iloc[0]):
+        percentage = (v / total) * 100
+        ax.text(i, v, f'{percentage:.1f}%', 
+                ha='center', va='bottom')
+    
+    plt.tight_layout()
+    plt.savefig(output_dir / 'flood_severity_distribution.png', 
+                dpi=300, bbox_inches='tight')
+    plt.close()
+
+def plot_regional_flood_comparison(htf_df: pd.DataFrame, 
+                                 output_dir: Path) -> None:
+    """Create plots comparing flood patterns across regions."""
+    # Calculate regional averages
+    regional_stats = htf_df.groupby('region_display').agg({
+        'total_flood_days': 'mean',
+        'major_flood_days': 'mean',
+        'moderate_flood_days': 'mean',
+        'minor_flood_days': 'mean'
+    }).round(1)
+    
+    # Create multi-bar plot
+    ax = regional_stats.plot(kind='bar', figsize=(12, 6))
+    plt.title('Average Flood Days by Region and Severity')
+    plt.xlabel('Region')
+    plt.ylabel('Average Number of Flood Days')
+    plt.xticks(rotation=45, ha='right')
+    plt.legend(title='Flood Type')
+    
+    plt.tight_layout()
+    plt.savefig(output_dir / 'regional_flood_comparison.png', 
+                dpi=300, bbox_inches='tight')
+    plt.close()
+
+def plot_major_flood_hotspots(htf_df: pd.DataFrame, 
+                            counties: gpd.GeoDataFrame,
+                            output_dir: Path) -> None:
+    """Create a map highlighting areas with high major flood days."""
+    # Calculate major flood percentages
+    htf_df['major_flood_pct'] = (htf_df['major_flood_days'] / 
+                                htf_df['total_flood_days'] * 100)
+    
+    # Merge with county geometries
+    merged = counties.merge(htf_df, on='county_fips')
+    
+    # Create figure
+    fig, ax = plt.subplots(figsize=(15, 10), 
+                          subplot_kw={'projection': ccrs.AlbersEqualArea(
+                              central_longitude=-96)})
+    
+    # Add map features
+    ax.add_feature(cfeature.COASTLINE)
+    ax.add_feature(cfeature.STATES)
+    
+    # Plot major flood percentage
+    merged.plot(column='major_flood_pct',
+               ax=ax,
+               legend=True,
+               legend_kwds={'label': 'Major Flood Days (%)'},
+               cmap='RdPu')
+    
+    plt.title('Major Flood Day Percentage by County')
+    plt.tight_layout()
+    
+    # Save figure
+    plt.savefig(output_dir / 'major_flood_hotspots.png', 
+                dpi=300, bbox_inches='tight')
+    plt.close()
+
+def setup_output_dir() -> Path:
+    """Create and return the output directory for visualizations."""
+    output_dir = Path('output/analysis')
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
-
-def plot_historical_trends(df: pd.DataFrame, output_dir: Path) -> None:
-    """Generate plots for historical HTF data."""
-    
-    # 1. Annual flood days by severity over time
-    plt.figure(figsize=(12, 6))
-    yearly_floods = df.groupby('year')[['major_flood_days', 'moderate_flood_days', 'minor_flood_days']].mean()
-    yearly_floods.plot(kind='line', marker='o', markersize=4)
-    plt.title('Average Annual Flood Days by Severity (1920-2024)')
-    plt.xlabel('Year')
-    plt.ylabel('Average Flood Days')
-    plt.legend(title='Flood Severity')
-    plt.grid(True, alpha=0.3)
-    plt.savefig(output_dir / 'historical_flood_trends.png', dpi=300, bbox_inches='tight')
-    plt.close()
-    
-    # 2. Geographic distribution of total floods
-    plt.figure(figsize=(12, 6))
-    station_totals = df.groupby('station_name')['total_flood_days'].sum().sort_values(ascending=True)
-    top_20_stations = station_totals.tail(20)
-    sns.barplot(x=top_20_stations.values, y=top_20_stations.index)
-    plt.title('Top 20 Stations by Total Flood Days')
-    plt.xlabel('Total Flood Days')
-    plt.tight_layout()
-    plt.savefig(output_dir / 'historical_station_totals.png', dpi=300, bbox_inches='tight')
-    plt.close()
-    
-    # 3. Data completeness heatmap
-    plt.figure(figsize=(15, 8))
-    pivot_data = df.pivot_table(
-        values='data_completeness',
-        index='station_name',
-        columns='year',
-        aggfunc='first'
-    )
-    sns.heatmap(pivot_data, cmap='YlOrRd', cbar_kws={'label': 'Data Completeness'})
-    plt.title('Data Completeness by Station and Year')
-    plt.tight_layout()
-    plt.savefig(output_dir / 'historical_completeness.png', dpi=300, bbox_inches='tight')
-    plt.close()
-
-def plot_projected_trends(df: pd.DataFrame, output_dir: Path) -> None:
-    """Generate plots for projected HTF data."""
-    
-    # 1. Scenario comparison over time
-    plt.figure(figsize=(12, 6))
-    scenarios = ['low_scenario', 'intermediate_low_scenario', 'intermediate_scenario', 
-                'intermediate_high_scenario', 'high_scenario']
-    
-    decade_means = df.groupby('decade')[scenarios].mean()
-    decade_means.plot(kind='line', marker='o', markersize=4)
-    plt.title('Average Projected Flood Days by Scenario (2020-2100)')
-    plt.xlabel('Decade')
-    plt.ylabel('Average Annual Flood Days')
-    plt.legend(title='Scenario', bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(output_dir / 'projected_scenario_trends.png', dpi=300, bbox_inches='tight')
-    plt.close()
-    
-    # 2. Uncertainty range by decade
-    plt.figure(figsize=(12, 6))
-    decade_uncertainty = df.groupby('decade')['scenario_range'].mean()
-    plt.bar(decade_uncertainty.index, decade_uncertainty.values)
-    plt.title('Average Scenario Range by Decade')
-    plt.xlabel('Decade')
-    plt.ylabel('Range (High - Low Scenario)')
-    plt.grid(True, alpha=0.3)
-    plt.savefig(output_dir / 'projected_uncertainty.png', dpi=300, bbox_inches='tight')
-    plt.close()
-    
-    # 3. End-of-century impact distribution
-    plt.figure(figsize=(12, 6))
-    end_century = df[df['decade'] == df['decade'].max()]
-    sns.boxplot(data=end_century[scenarios])
-    plt.title('Distribution of Projected Flood Days by Scenario (2100)')
-    plt.xticks(rotation=45)
-    plt.ylabel('Annual Flood Days')
-    plt.tight_layout()
-    plt.savefig(output_dir / 'projected_2100_distribution.png', dpi=300, bbox_inches='tight')
-    plt.close()
 
 def main():
     try:
         # Setup output directory
         output_dir = setup_output_dir()
-        logger.info(f"Saving visualizations to {output_dir}")
+        logger.info(f"Output directory: {output_dir}")
         
-        # Load and visualize historical data
-        historical_file = Path("output/historical_htf/historical_htf.parquet")
-        if historical_file.exists():
-            logger.info("Generating historical data visualizations...")
-            historical_df = pd.read_parquet(historical_file)
-            plot_historical_trends(historical_df, output_dir)
+        # Load historical HTF data
+        historical_dir = Path("output/historical")
+        if not historical_dir.exists():
+            raise FileNotFoundError("Historical data directory not found")
         
-        # Load and visualize projected data
-        projected_file = Path("output/projected_htf/projected_htf.parquet")
-        if projected_file.exists():
-            logger.info("Generating projected data visualizations...")
-            projected_df = pd.read_parquet(projected_file)
-            plot_projected_trends(projected_df, output_dir)
-            
+        # Load and combine regional data
+        dfs = []
+        for file in historical_dir.glob("historical_htf_*.parquet"):
+            df = pd.read_parquet(file)
+            dfs.append(df)
+        
+        htf_df = pd.concat(dfs, ignore_index=True)
+        
+        # Load county geometries
+        counties = gpd.read_file("data/processed/county_geometries.geojson")
+        
+        # Generate visualizations
+        logger.info("Generating flood severity distribution plot...")
+        plot_flood_severity_distribution(htf_df, output_dir)
+        
+        logger.info("Generating regional flood comparison plot...")
+        plot_regional_flood_comparison(htf_df, output_dir)
+        
+        logger.info("Generating major flood hotspots map...")
+        plot_major_flood_hotspots(htf_df, counties, output_dir)
+        
+        logger.info("Generating regional flood maps...")
+        for region in htf_df['region'].unique():
+            logger.info(f"Processing {region}...")
+            plot_regional_flood_map(region, htf_df, counties, output_dir)
+        
         logger.info("Visualization generation complete!")
         
     except Exception as e:
-        logger.error(f"Error generating visualizations: {str(e)}")
+        logger.error(f"Error in visualization: {str(e)}")
         raise
 
 if __name__ == "__main__":

@@ -1,24 +1,21 @@
 """
-Data loading utilities for county-level HTF assignment.
+Simplified data loading utilities for HTF assignment.
+Works with the existing imputation structure and flood data.
 """
 
 import pandas as pd
 from pathlib import Path
 from typing import Tuple, Dict
 import logging
-import numpy as np
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 def load_gauge_county_mapping(filepath: str | Path) -> pd.DataFrame:
     """
     Load the gauge-to-county mapping structure with weights.
-    Counties without gauge data will still be included.
     
     Args:
-        filepath: Path to the mapping parquet file
+        filepath: Path to the imputation structure parquet file
         
     Returns:
         DataFrame containing the gauge-county relationships and weights
@@ -26,25 +23,14 @@ def load_gauge_county_mapping(filepath: str | Path) -> pd.DataFrame:
     logger.info(f"Loading gauge-county mapping from {filepath}")
     df = pd.read_parquet(filepath)
     
-    # Only require essential county identification columns
+    # Verify we have the essential columns
     required_columns = [
-        'county_fips', 'county_name', 'state_fips', 'geometry'
+        'county_fips', 'station_id', 'station_name', 'weight'
     ]
     
     missing_cols = [col for col in required_columns if col not in df.columns]
     if missing_cols:
         raise ValueError(f"Missing required columns in mapping file: {missing_cols}")
-    
-    # Ensure gauge columns exist, even if empty
-    gauge_columns = [
-        'gauge_id_1', 'gauge_name_1', 'distance_1', 'weight_1',
-        'gauge_id_2', 'gauge_name_2', 'distance_2', 'weight_2',
-        'gauge_id_3', 'gauge_name_3', 'distance_3', 'weight_3'
-    ]
-    
-    for col in gauge_columns:
-        if col not in df.columns:
-            df[col] = np.nan
     
     logger.info(f"Loaded mapping with {len(df)} records covering {df['county_fips'].nunique()} counties")
     return df
@@ -54,112 +40,62 @@ def load_historical_htf(filepath: str | Path) -> pd.DataFrame:
     Load historical HTF data.
     
     Args:
-        filepath: Path to historical HTF data
+        filepath: Path to directory containing regional HTF data
         
     Returns:
         DataFrame with historical HTF data
     """
-    df = pd.read_parquet(filepath)
+    filepath = Path(filepath)
     
+    # Load all regional files
+    dfs = []
+    for file in filepath.glob("historical_htf_*.parquet"):
+        df = pd.read_parquet(file)
+        dfs.append(df)
+    
+    if not dfs:
+        raise FileNotFoundError(f"No historical HTF files found in {filepath}")
+    
+    # Combine all regions
+    df = pd.concat(dfs, ignore_index=True)
+    
+    # Verify we have the required columns
     required_cols = [
-        'station_id', 'station_name', 'year', 
-        'major_flood_days', 'moderate_flood_days', 'minor_flood_days',
-        'total_flood_days'
+        'station_id', 'year', 'flood_days', 'missing_days'
     ]
     
     missing = [col for col in required_cols if col not in df.columns]
     if missing:
         raise ValueError(f"Missing required columns in historical HTF data: {missing}")
     
+    logger.info(f"Loaded {len(df)} historical HTF records")
     return df
 
-def load_projected_htf(filepath: str | Path) -> pd.DataFrame:
+def load_htf_data(historical_path: str | Path) -> pd.DataFrame:
     """
-    Load and transform projected HTF data.
+    Load historical HTF dataset.
     
     Args:
-        filepath: Path to projected HTF data
+        historical_path: Path to historical HTF data directory
         
     Returns:
-        DataFrame with projected HTF data
+        DataFrame with historical HTF data
     """
-    df = pd.read_parquet(filepath)
-    
-    required_cols = [
-        'station', 'station_name', 'decade',
-        'low_scenario', 'intermediate_low_scenario', 'intermediate_scenario',
-        'intermediate_high_scenario', 'high_scenario'
-    ]
-    
-    missing = [col for col in required_cols if col not in df.columns]
-    if missing:
-        raise ValueError(f"Missing required columns in projected HTF data: {missing}")
-    
-    # Rename station column to match historical data
-    df = df.rename(columns={'station': 'station_id'})
-    
-    # Convert decade to individual years
-    years_df = []
-    for _, row in df.iterrows():
-        # Create entries for each year in the decade
-        for year in range(row['decade'], row['decade'] + 10):
-            year_data = {
-                'station_id': row['station_id'],
-                'station_name': row['station_name'],
-                'year': year,
-                'low_scenario': row['low_scenario'],
-                'intermediate_low_scenario': row['intermediate_low_scenario'],
-                'intermediate_scenario': row['intermediate_scenario'],
-                'intermediate_high_scenario': row['intermediate_high_scenario'],
-                'high_scenario': row['high_scenario']
-            }
-            years_df.append(year_data)
-    
-    df_expanded = pd.DataFrame(years_df)
-    
-    logger.info(
-        f"Expanded projected data from {len(df)} decade records to "
-        f"{len(df_expanded)} yearly records"
-    )
-    
-    return df_expanded
-
-def load_htf_data(historical_path: str | Path, projected_path: str | Path) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Load both historical and projected HTF datasets.
-    
-    Args:
-        historical_path: Path to historical HTF data
-        projected_path: Path to projected HTF data
-        
-    Returns:
-        Tuple of (historical_df, projected_df)
-    """
-    logger.info("Loading HTF datasets")
-    
+    logger.info("Loading HTF dataset")
     historical_df = load_historical_htf(historical_path)
-    projected_df = load_projected_htf(projected_path)
-    
-    logger.info(f"Loaded HTF data - Historical: {len(historical_df)} records, Projected: {len(projected_df)} records")
-    return historical_df, projected_df
+    logger.info(f"Loaded HTF data - {len(historical_df)} records")
+    return historical_df
 
-def validate_gauge_coverage(mapping_df: pd.DataFrame, htf_df: pd.DataFrame, dataset_name: str) -> None:
+def validate_gauge_coverage(mapping_df: pd.DataFrame, htf_df: pd.DataFrame) -> None:
     """
     Validate gauge coverage by checking which gauges in the mapping have HTF data.
-    Warns about missing data but does not filter out counties.
     
     Args:
         mapping_df: DataFrame containing gauge-county mapping
         htf_df: DataFrame containing HTF data
-        dataset_name: Name of the dataset (for logging)
     """
     # Get all gauges from mapping
-    mapping_gauges = set()
-    for i in range(1, 4):
-        gauge_col = f'gauge_id_{i}'
-        if gauge_col in mapping_df.columns:
-            gauges = mapping_df[gauge_col].dropna().unique()
-            mapping_gauges.update(gauges)
+    mapping_gauges = set(mapping_df['station_id'].unique())
     
     # Check which gauges have HTF data
     htf_gauges = set(htf_df['station_id'].unique())
@@ -167,6 +103,6 @@ def validate_gauge_coverage(mapping_df: pd.DataFrame, htf_df: pd.DataFrame, data
     
     if missing_gauges:
         logger.warning(
-            f"Found {len(missing_gauges)} gauges in mapping without {dataset_name} HTF data: "
+            f"Found {len(missing_gauges)} gauges in mapping without HTF data: "
             f"{sorted(list(missing_gauges))[:5]}..."
         ) 

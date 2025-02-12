@@ -1,394 +1,265 @@
 """
-Core logic for assigning gauge-level HTF data to counties using weighted relationships.
+Simplified HTF data assignment module.
+Works with the existing imputation structure and flood data.
+
+Notes on HTF Data:
+- Missing days (NaN) indicate periods before a tide station was installed
+- Zero flood days are valid measurements indicating no flooding occurred
+- Flood days have generally increased in recent years due to sea level rise
+- Early years often have legitimate zero flood days, not missing data
 """
 
 import pandas as pd
-import numpy as np
-from typing import Dict, List, Tuple
 import logging
-from tqdm.auto import tqdm
-from concurrent.futures import ProcessPoolExecutor
-import multiprocessing
-import os
+from pathlib import Path
+from typing import Dict, Optional, Generator
+import numpy as np
+import gc
+import psutil
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
-def init_tqdm():
-    """Initialize tqdm for child processes."""
-    tqdm.set_lock(multiprocessing.RLock())
+def log_memory_usage():
+    """Log current memory usage."""
+    process = psutil.Process()
+    memory_gb = process.memory_info().rss / 1024 / 1024 / 1024
+    logger.info(f"Current memory usage: {memory_gb:.2f} GB")
 
-def prepare_historical_gauge_data(htf_df: pd.DataFrame, mapping_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Prepare historical gauge data by ensuring all required gauges have data for all years.
+def optimize_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    """Simple data type optimization focusing on numeric columns.
     
     Args:
-        htf_df: DataFrame containing historical HTF data
-        mapping_df: DataFrame containing gauge-county mapping
+        df: DataFrame to optimize
         
     Returns:
-        DataFrame with complete historical gauge data
+        Optimized DataFrame
     """
-    years = htf_df['year'].unique()
+    df = df.copy()
     
-    # Get all gauges from mapping
-    mapping_gauges = set()
-    for i in range(1, 4):
-        gauge_col = f'gauge_id_{i}'
-        if gauge_col in mapping_df.columns:
-            gauges = mapping_df[gauge_col].dropna().unique()
-            mapping_gauges.update(gauges)
-    
-    # Create complete index of year-gauge combinations
-    index = pd.MultiIndex.from_product(
-        [years, list(mapping_gauges)],
-        names=['year', 'station_id']
-    )
-    
-    # Reindex HTF data to ensure all combinations exist
-    complete_df = htf_df.set_index(['year', 'station_id']).reindex(index)
-    complete_df = complete_df.fillna(0)  # Assume no floods when data is missing
-    
-    return complete_df.reset_index()
-
-def prepare_projected_gauge_data(htf_df: pd.DataFrame, mapping_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Prepare projected gauge data.
-    
-    Args:
-        htf_df: DataFrame containing projected HTF data
-        mapping_df: DataFrame containing gauge-county mapping
-        
-    Returns:
-        DataFrame with complete projected gauge data
-    """
-    years = htf_df['year'].unique()
-    
-    # Get all gauges from mapping
-    mapping_gauges = set()
-    for i in range(1, 4):
-        gauge_col = f'gauge_id_{i}'
-        if gauge_col in mapping_df.columns:
-            gauges = mapping_df[gauge_col].dropna().unique()
-            mapping_gauges.update(gauges)
-    
-    # Create complete index of year-gauge combinations
-    index = pd.MultiIndex.from_product(
-        [years, list(mapping_gauges)],
-        names=['year', 'station_id']
-    )
-    
-    # For projected data, we'll keep NaN values as they represent missing projections
-    complete_df = htf_df.set_index(['year', 'station_id']).reindex(index)
-    
-    return complete_df.reset_index()
-
-def prepare_gauge_lookup(complete_gauge_data: pd.DataFrame, mapping_df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
-    """
-    Pre-compute gauge data lookup for faster access.
-    
-    Args:
-        complete_gauge_data: DataFrame with complete gauge data
-        mapping_df: DataFrame with gauge-county mapping
-        
-    Returns:
-        Dictionary mapping gauge IDs to their data
-    """
-    mapping_gauges = set()
-    for i in range(1, 4):
-        gauge_col = f'gauge_id_{i}'
-        if gauge_col in mapping_df.columns:
-            gauges = mapping_df[gauge_col].dropna().unique()
-            mapping_gauges.update(gauges)
-    
-    return {
-        gauge_id: complete_gauge_data[complete_gauge_data['station_id'] == gauge_id]
-        for gauge_id in mapping_gauges
+    # Handle numeric columns
+    numeric_cols = {
+        'year': np.int16,
+        'flood_days': np.float32,
+        'missing_days': np.float32,
+        'weight': np.float32
     }
+    
+    for col, dtype in numeric_cols.items():
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce').astype(dtype)
+    
+    return df
 
-def calculate_county_values(
-    county_data: Tuple[pd.Series, pd.DataFrame, Dict[str, pd.DataFrame], List[str], List[int]]
-) -> pd.DataFrame:
-    """
-    Calculate HTF values for a single county using vectorized operations.
-    
-    Args:
-        county_data: Tuple containing (county info, mapping data, gauge lookup, columns, years)
-        
-    Returns:
-        DataFrame with county results
-    """
-    county, county_mapping, gauge_lookup, value_columns, years = county_data
-    gauge_data = []
-    has_data = False
-    
-    # Get gauge data for this county
-    if not county_mapping.empty:
-        for i in range(1, 4):
-            gauge_id = county_mapping.iloc[0].get(f'gauge_id_{i}')
-            weight = county_mapping.iloc[0].get(f'weight_{i}', 0)
-            
-            if pd.notna(gauge_id) and weight > 0:
-                gauge_df = gauge_lookup.get(gauge_id)
-                if gauge_df is not None and not gauge_df.empty:
-                    gauge_data.append((gauge_df, weight))
-                    has_data = True
-    
-    if not has_data:
-        # Create empty data with NaN values
-        empty_data = pd.DataFrame({
-            'year': years,
-            'county_fips': county['county_fips'],
-            'county_name': county['county_name'],
-            'state_fips': county['state_fips'],
-            'geometry': county['geometry']
-        })
-        for col in value_columns:
-            empty_data[col] = np.nan
-        return empty_data
-    
-    # Vectorized calculation for all years
-    yearly_data = []
-    for gauge_df, weight in gauge_data:
-        # Process each value column separately
-        gauge_values = {}
-        for col in value_columns:
-            # Get values for this column and weight them
-            values = gauge_df.pivot(index='year', columns='station_id', values=col)
-            # Sum across stations if multiple exist
-            values = values.sum(axis=1) * weight
-            gauge_values[col] = values
-        yearly_data.append(gauge_values)
-    
-    # Combine all gauge data
-    combined_data = {}
-    for col in value_columns:
-        # Sum the weighted values from all gauges
-        col_data = pd.Series(0, index=years)
-        for data in yearly_data:
-            col_data = col_data.add(data[col], fill_value=0)
-        combined_data[col] = col_data
-    
-    # Create final county data
-    result_data = pd.DataFrame({
-        'year': years,
-        'county_fips': county['county_fips'],
-        'county_name': county['county_name'],
-        'state_fips': county['state_fips'],
-        'geometry': county['geometry']
-    })
-    
-    # Add calculated columns
-    for col in value_columns:
-        result_data[col] = combined_data[col].values
-    
-    return result_data
-
-def calculate_historical_county_htf(
+def process_in_chunks(
     htf_df: pd.DataFrame,
     mapping_df: pd.DataFrame,
-    n_processes: int = None
-) -> pd.DataFrame:
-    """
-    Calculate county-level historical HTF values using parallel processing.
+    chunk_size: int = 100,
+    start_year: int = 1970
+) -> Generator[pd.DataFrame, None, None]:
+    """Process HTF data in chunks to manage memory usage.
+    
+    Notes:
+        - Missing days indicate periods before station installation
+        - Zero flood days are valid measurements (no flooding)
+        - We keep all records from start_year onwards, as zeros are valid data
     
     Args:
-        htf_df: DataFrame containing historical HTF data
-        mapping_df: DataFrame containing gauge-county mapping
-        n_processes: Number of processes to use (defaults to CPU count - 1)
-        
-    Returns:
-        DataFrame with county-level historical HTF values
+        htf_df: Historical HTF data
+        mapping_df: Gauge-county mapping with weights
+        chunk_size: Number of stations to process at once
+        start_year: Start year for analysis (inclusive)
     """
-    logger.info("Calculating county-level historical HTF values")
+    # Filter by year
+    htf_df = htf_df[htf_df['year'] >= start_year].copy()
+    logger.info(f"Processing {len(htf_df)} records from {start_year} onwards")
     
-    if n_processes is None:
-        n_processes = max(1, multiprocessing.cpu_count() - 1)
+    # Log data completeness
+    total_records = len(htf_df)
+    missing_records = len(htf_df[htf_df['missing_days'] == 365])
+    zero_flood_records = len(htf_df[htf_df['flood_days'] == 0])
+    logger.info(f"Data overview:")
+    logger.info(f"  - Total records: {total_records}")
+    logger.info(f"  - Records with no floods: {zero_flood_records} ({zero_flood_records/total_records*100:.1f}%)")
+    logger.info(f"  - Records before station installation: {missing_records} ({missing_records/total_records*100:.1f}%)")
     
-    flood_columns = [
-        'total_flood_days', 'major_flood_days', 
-        'moderate_flood_days', 'minor_flood_days'
-    ]
+    # Get unique stations
+    stations = htf_df['station_id'].unique()
     
-    # Prepare data
-    complete_gauge_data = prepare_historical_gauge_data(htf_df, mapping_df)
-    years = complete_gauge_data['year'].unique()
-    gauge_lookup = prepare_gauge_lookup(complete_gauge_data, mapping_df)
+    # Keep only necessary columns
+    htf_cols = ['station_id', 'year', 'flood_days', 'missing_days']
+    mapping_cols = ['station_id', 'county_fips', 'weight', 'region']
     
-    # Get unique counties
-    unique_counties = mapping_df[['county_fips', 'county_name', 'state_fips', 'geometry']].drop_duplicates()
-    total_counties = len(unique_counties)
+    htf_df = htf_df[htf_cols].copy()
+    mapping_df = mapping_df[mapping_cols].copy()
     
-    # Prepare data for parallel processing
-    county_data = [
-        (
-            county,
-            mapping_df[mapping_df['county_fips'] == county['county_fips']],
-            gauge_lookup,
-            flood_columns,
-            years
+    # Process stations in chunks
+    for i in range(0, len(stations), chunk_size):
+        chunk_stations = stations[i:i + chunk_size]
+        
+        # Filter data for current chunk
+        chunk_htf = htf_df[htf_df['station_id'].isin(chunk_stations)]
+        chunk_mapping = mapping_df[mapping_df['station_id'].isin(chunk_stations)]
+        
+        # Ensure numeric types
+        chunk_htf = optimize_dtypes(chunk_htf)
+        chunk_mapping = optimize_dtypes(chunk_mapping)
+        
+        # Process chunk
+        merged_df = pd.merge(
+            chunk_mapping,
+            chunk_htf,
+            on='station_id',
+            how='left'
         )
-        for _, county in unique_counties.iterrows()
-    ]
-    
-    # Process counties in parallel with enhanced progress bar
-    logger.info(f"Processing {total_counties} counties using {n_processes} processes")
-    
-    # Initialize progress bar
-    pbar = tqdm(
-        total=total_counties,
-        desc="Processing historical HTF by county",
-        unit="county",
-        position=0,
-        leave=True,
-        ncols=100,
-        miniters=1
-    )
-    
-    # Process counties in parallel
-    county_results = []
-    with ProcessPoolExecutor(
-        max_workers=n_processes, 
-        initializer=init_tqdm
-    ) as executor:
-        futures = [
-            executor.submit(calculate_county_values, data)
-            for data in county_data
-        ]
         
-        for future in futures:
-            result = future.result()
-            county_results.append(result)
-            pbar.update(1)
-    
-    pbar.close()
-    
-    # Combine results
-    result_df = pd.concat(county_results, ignore_index=True)
-    
-    # Log summary
-    counties_with_data = result_df[flood_columns[0]].notna().groupby(result_df['county_fips']).any()
-    counties_without_data = counties_with_data[~counties_with_data].index
-    
-    if len(counties_without_data) > 0:
-        logger.info(f"Found {len(counties_without_data)} counties with no historical gauge data:")
-        sample_counties = result_df[
-            result_df['county_fips'].isin(counties_without_data.tolist()[:10])
-        ][['county_fips', 'county_name', 'state_fips']].drop_duplicates()
+        # Calculate weighted values
+        # Note: missing_days of 365 indicate no station data, but flood_days of 0 are valid measurements
+        merged_df['weighted_flood_days'] = merged_df['flood_days'] * merged_df['weight']
+        merged_df['weighted_missing_days'] = merged_df['missing_days'] * merged_df['weight']
         
-        for _, county in sample_counties.iterrows():
-            logger.info(f"  - {county['county_name']} County (FIPS: {county['county_fips']}, State: {county['state_fips']})")
+        # Group by county and year
+        county_htf = merged_df.groupby(['county_fips', 'year']).agg({
+            'weighted_flood_days': 'sum',
+            'weighted_missing_days': 'sum',
+            'weight': 'sum',
+            'region': 'first'
+        }).reset_index()
         
-        if len(counties_without_data) > 10:
-            logger.info(f"  ... and {len(counties_without_data) - 10} more")
-    
-    logger.info(
-        f"Completed historical HTF calculations for {result_df['county_fips'].nunique()} counties "
-        f"across {len(years)} years"
-    )
-    
-    return result_df
+        # Calculate final values
+        county_htf['flood_days'] = (county_htf['weighted_flood_days'] / county_htf['weight']).astype(np.float32)
+        county_htf['missing_days'] = (county_htf['weighted_missing_days'] / county_htf['weight']).astype(np.float32)
+        
+        # Drop intermediate columns
+        county_htf = county_htf.drop(columns=[
+            'weighted_flood_days', 'weighted_missing_days', 'weight'
+        ])
+        
+        yield county_htf
+        
+        # Clean up memory
+        del chunk_htf, chunk_mapping, merged_df, county_htf
+        gc.collect()
 
-def calculate_projected_county_htf(
+def calculate_county_htf(
     htf_df: pd.DataFrame,
     mapping_df: pd.DataFrame,
-    n_processes: int = None
+    chunk_size: int = 100,
+    start_year: int = 1970
 ) -> pd.DataFrame:
+    """Calculate county-level HTF values using weighted station data.
+    
+    Notes:
+        - Zero flood days are valid measurements indicating no flooding
+        - Missing days (365) indicate periods before station installation
+        - Early years often have legitimate zero flood days due to lower sea levels
     """
-    Calculate county-level projected HTF values using parallel processing.
+    logger.info("Calculating county-level HTF values")
+    log_memory_usage()
     
-    Args:
-        htf_df: DataFrame containing projected HTF data
-        mapping_df: DataFrame containing gauge-county mapping
-        n_processes: Number of processes to use (defaults to CPU count - 1)
+    # Process data in chunks
+    results = []
+    for chunk_result in tqdm(
+        process_in_chunks(htf_df, mapping_df, chunk_size, start_year),
+        desc="Processing stations in chunks",
+        total=len(htf_df['station_id'].unique()) // chunk_size + 1
+    ):
+        results.append(chunk_result)
         
-    Returns:
-        DataFrame with county-level projected HTF values
-    """
-    logger.info("Calculating county-level projected HTF values")
-    
-    if n_processes is None:
-        n_processes = max(1, multiprocessing.cpu_count() - 1)
-    
-    scenario_columns = [
-        'low_scenario', 'intermediate_low_scenario', 'intermediate_scenario',
-        'intermediate_high_scenario', 'high_scenario'
-    ]
-    
-    # Prepare data
-    complete_gauge_data = prepare_projected_gauge_data(htf_df, mapping_df)
-    years = complete_gauge_data['year'].unique()
-    gauge_lookup = prepare_gauge_lookup(complete_gauge_data, mapping_df)
-    
-    # Get unique counties
-    unique_counties = mapping_df[['county_fips', 'county_name', 'state_fips', 'geometry']].drop_duplicates()
-    total_counties = len(unique_counties)
-    
-    # Prepare data for parallel processing
-    county_data = [
-        (
-            county,
-            mapping_df[mapping_df['county_fips'] == county['county_fips']],
-            gauge_lookup,
-            scenario_columns,
-            years
-        )
-        for _, county in unique_counties.iterrows()
-    ]
-    
-    # Process counties in parallel with enhanced progress bar
-    logger.info(f"Processing {total_counties} counties using {n_processes} processes")
-    
-    # Initialize progress bar
-    pbar = tqdm(
-        total=total_counties,
-        desc="Processing projected HTF by county",
-        unit="county",
-        position=0,
-        leave=True,
-        ncols=100,
-        miniters=1
-    )
-    
-    # Process counties in parallel
-    county_results = []
-    with ProcessPoolExecutor(
-        max_workers=n_processes, 
-        initializer=init_tqdm
-    ) as executor:
-        futures = [
-            executor.submit(calculate_county_values, data)
-            for data in county_data
-        ]
-        
-        for future in futures:
-            result = future.result()
-            county_results.append(result)
-            pbar.update(1)
-    
-    pbar.close()
+        # Log memory usage periodically
+        if len(results) % 10 == 0:
+            log_memory_usage()
     
     # Combine results
-    result_df = pd.concat(county_results, ignore_index=True)
+    county_htf = pd.concat(results, ignore_index=True)
     
-    # Log summary
-    counties_with_data = result_df[scenario_columns[0]].notna().groupby(result_df['county_fips']).any()
-    counties_without_data = counties_with_data[~counties_with_data].index
+    # Final aggregation if needed
+    county_htf = county_htf.groupby(['county_fips', 'year', 'region']).agg({
+        'flood_days': 'mean',
+        'missing_days': 'mean'
+    }).reset_index()
     
-    if len(counties_without_data) > 0:
-        logger.info(f"Found {len(counties_without_data)} counties with no projected gauge data:")
-        sample_counties = result_df[
-            result_df['county_fips'].isin(counties_without_data.tolist()[:10])
-        ][['county_fips', 'county_name', 'state_fips']].drop_duplicates()
-        
-        for _, county in sample_counties.iterrows():
-            logger.info(f"  - {county['county_name']} County (FIPS: {county['county_fips']}, State: {county['state_fips']})")
-        
-        if len(counties_without_data) > 10:
-            logger.info(f"  ... and {len(counties_without_data) - 10} more")
+    # Ensure final dtypes
+    county_htf = optimize_dtypes(county_htf)
     
-    logger.info(
-        f"Completed projected HTF calculations for {result_df['county_fips'].nunique()} counties "
-        f"across {len(years)} years"
-    )
+    # Log completion statistics
+    logger.info(f"Calculated HTF values for {county_htf['county_fips'].nunique()} counties")
+    logger.info(f"Year range: {county_htf['year'].min()} - {county_htf['year'].max()}")
     
-    return result_df 
+    # Calculate trend statistics
+    early_years = county_htf[county_htf['year'] <= 1980]['flood_days'].mean()
+    recent_years = county_htf[county_htf['year'] >= 2010]['flood_days'].mean()
+    logger.info(f"\nTrend Analysis:")
+    logger.info(f"Average flood days (1970-1980): {early_years:.2f}")
+    logger.info(f"Average flood days (2010-2024): {recent_years:.2f}")
+    logger.info(f"Relative increase: {((recent_years/early_years)-1)*100:.1f}%")
+    
+    log_memory_usage()
+    return county_htf
+
+def process_htf_assignment(
+    mapping_path: str | Path,
+    historical_path: str | Path,
+    output_dir: str | Path
+) -> None:
+    """
+    Process HTF data assignment using simplified approach.
+    
+    Args:
+        mapping_path: Path to gauge-county mapping file
+        historical_path: Path to historical HTF data directory
+        output_dir: Directory to save outputs
+    """
+    from .data_loader import load_gauge_county_mapping, load_htf_data, validate_gauge_coverage
+    
+    logger.info("Starting simplified HTF assignment process")
+    log_memory_usage()
+    
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Load data
+    mapping_df = load_gauge_county_mapping(mapping_path)
+    htf_df = load_htf_data(historical_path)
+    
+    # Validate gauge coverage
+    validate_gauge_coverage(mapping_df, htf_df)
+    
+    # Calculate county-level HTF values
+    county_htf = calculate_county_htf(htf_df, mapping_df)
+    
+    # Clean up memory before saving
+    del htf_df, mapping_df
+    gc.collect()
+    log_memory_usage()
+    
+    # Save results in chunks
+    chunk_size = 500  # Smaller chunks for saving
+    for i in range(0, len(county_htf), chunk_size):
+        chunk = county_htf.iloc[i:i + chunk_size]
+        output_file = output_dir / f"county_htf_values_{i//chunk_size}.parquet"
+        chunk.to_parquet(output_file, compression='snappy')
+    
+    logger.info(f"Saved county HTF values in chunks to {output_dir}")
+    
+    # Display summary statistics
+    logger.info("\nSummary Statistics:")
+    logger.info(f"Total counties: {county_htf['county_fips'].nunique()}")
+    logger.info(f"Year range: {county_htf['year'].min()} - {county_htf['year'].max()}")
+    logger.info("\nStatistics by region:")
+    region_stats = county_htf.groupby('region').agg({
+        'county_fips': 'nunique',
+        'flood_days': ['mean', 'max']
+    }).round(2)
+    region_stats.columns = ['num_counties', 'avg_flood_days', 'max_flood_days']
+    logger.info(region_stats.to_string())
+    
+    logger.info("\nFlood days statistics:")
+    logger.info(county_htf['flood_days'].describe().round(3).to_string())
+    
+    # Display sample of results with better formatting
+    logger.info("\nSample of county HTF values:")
+    sample_df = county_htf.head()
+    sample_df['flood_days'] = sample_df['flood_days'].round(2)
+    sample_df['missing_days'] = sample_df['missing_days'].round(1)
+    logger.info(sample_df.to_string(index=False)) 

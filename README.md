@@ -252,13 +252,13 @@ The package includes visualization tools for analyzing tide gauge coverage acros
   - Higher scores indicate better coverage
 
 - **Regional Visualizations**:
-  - Mid Atlantic (`imputation_mid_atlantic.py`)
-  - North Atlantic (`imputation_north_atlantic.py`)
-  - South Atlantic (`imputation_south_atlantic.py`)
-  - Gulf Coast (`imputation_gulf_coast.py`)
-  - Puerto Rico (`imputation_puerto_rico.py`)
-  - Virgin Islands (`imputation_virgin_islands.py`)
-  - Hawaii (`imputation_hawaii.py`)
+  - Mid Atlantic (`imputation_map_mid_atlantic.py`)
+  - North Atlantic (`imputation_map_north_atlantic.py`)
+  - South Atlantic (`imputation_map_south_atlantic.py`)
+  - Gulf Coast (`imputation_map_gulf_coast.py`)
+  - Puerto Rico (`imputation_map_puerto_rico.py`)
+  - Virgin Islands (`imputation_map_virgin_islands.py`)
+  - Hawaii (`imputation_map_hawaii.py`)
 
 Each visualization includes:
 - Choropleth maps showing coverage scores
