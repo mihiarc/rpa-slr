@@ -1,8 +1,9 @@
 """
 County-level aggregation for historical HTF data.
 
-This module handles the aggregation of reference point HTF data to county level.
-Supports both weighted and unweighted aggregation methods.
+This module handles the aggregation of station HTF data to county level using
+the imputation structure. Supports region-specific processing and configurable
+data completeness requirements.
 
 The weighting logic for aggregating HTF (High Tide Flooding) data to county level works as follows:
 
@@ -32,8 +33,7 @@ coastal segments.
 """
 
 import pandas as pd
-import geopandas as gpd
-from typing import Dict, List, Optional, Tuple
+import numpy as np
 import logging
 
 logger = logging.getLogger(__name__)
@@ -41,194 +41,98 @@ logger = logging.getLogger(__name__)
 class HistoricalAggregator:
     """Aggregates historical HTF data to county level."""
     
-    def aggregate_to_county(
+    def __init__(
         self,
-        htf_df: pd.DataFrame,
-        reference_points: gpd.GeoDataFrame,
-        stations: pd.DataFrame
-    ) -> pd.DataFrame:
-        """Aggregate HTF data to county level.
+        require_same_region: bool = True,
+        require_same_subregion: bool = False
+    ):
+        """Initialize aggregator with configuration.
         
         Args:
-            htf_df: DataFrame with HTF data
-            reference_points: GeoDataFrame with reference points
-            stations: DataFrame with station metadata
+            require_same_region: Whether to require stations and counties in same region
+            require_same_subregion: Whether to require stations and counties in same subregion
+        """
+        self.require_same_region = require_same_region
+        self.require_same_subregion = require_same_subregion
+        
+        logger.info("Initialized historical aggregator with regional filtering only")
+        logger.info(f"require_same_region={require_same_region}, require_same_subregion={require_same_subregion}")
+    
+    def aggregate_by_county(
+        self,
+        imputation_df: pd.DataFrame,
+        station_data: pd.DataFrame
+    ) -> pd.DataFrame:
+        """Aggregate flood days by county and year.
+        
+        Args:
+            imputation_df: DataFrame with imputation structure
+            station_data: DataFrame with station flood days by year
             
         Returns:
-            DataFrame with county-level aggregations
+            DataFrame with flood days by county and year
         """
-        logger.info("Aggregating HTF data to county level")
+        logger.info("Aggregating historical HTF data by county")
         
-        # Merge station weights
-        htf_with_weights = htf_df.merge(
-            stations[['station_id', 'total_weight']],
+        # Ensure columns exist
+        if 'county_fips' not in imputation_df.columns:
+            raise ValueError("Missing required column 'county_fips' in imputation data")
+        
+        if 'year' not in station_data.columns or 'flood_days' not in station_data.columns:
+            raise ValueError("Missing required columns in station data")
+        
+        # Filter by region/subregion if required
+        filtered_df = imputation_df.copy()
+        if self.require_same_region:
+            filtered_df = filtered_df[
+                filtered_df['station_region'] == filtered_df['county_region']
+            ]
+            logger.info(f"Filtered to {len(filtered_df)} station-county pairs in same region")
+        
+        if self.require_same_subregion:
+            filtered_df = filtered_df[
+                filtered_df['station_subregion'] == filtered_df['county_subregion']
+            ]
+            logger.info(f"Filtered to {len(filtered_df)} station-county pairs in same subregion")
+        
+        # No minimum weight filter - using all weighted relationships from regional filtering
+        if len(filtered_df) == 0:
+            logger.warning("No valid station-county relationships found after filtering")
+            return pd.DataFrame()
+        
+        # Join station data to imputation structure
+        merged = pd.merge(
+            filtered_df,
+            station_data,
             on='station_id',
-            how='left'
+            how='inner'
         )
+        
+        if len(merged) == 0:
+            logger.warning("No matching data between imputation structure and station data")
+            return pd.DataFrame()
         
         # Calculate weighted flood days
-        flood_columns = ['flood_days', 'missing_days']
-        for col in flood_columns:
-            if col in htf_with_weights.columns:
-                htf_with_weights[f'weighted_{col}'] = htf_with_weights[col] * htf_with_weights['weight']
+        merged['weighted_flood_days'] = merged['weight'] * merged['flood_days']
+        merged['weighted_completeness'] = merged['weight'] * merged['completeness']
         
-        # Group by county and year, then aggregate
-        agg_dict = {
-            'reference_point_id': 'nunique',
+        # Group by county and year
+        county_data = merged.groupby(['county_fips', 'year', 'region']).agg({
+            'weighted_flood_days': 'sum',
+            'weighted_completeness': 'sum',
+            'weight': 'sum',
             'station_id': 'nunique',
-            'total_weight': 'sum',
-            'weight': 'sum'
-        }
+            'reference_id': 'nunique'
+        }).reset_index()
         
-        # Add weighted flood columns to aggregation
-        for col in flood_columns:
-            if f'weighted_{col}' in htf_with_weights.columns:
-                agg_dict[f'weighted_{col}'] = 'sum'
-        
-        county_data = htf_with_weights.groupby(['county_fips', 'year']).agg(agg_dict).reset_index()
-        
-        # Calculate final flood metrics
-        for col in flood_columns:
-            if f'weighted_{col}' in county_data.columns:
-                county_data[col] = county_data[f'weighted_{col}'] / county_data['weight']
-                county_data = county_data.drop(columns=[f'weighted_{col}'])
-        
-        # Rename columns for clarity
-        county_data = county_data.rename(columns={
-            'reference_point_id': 'n_reference_points',
+        # Calculate final values
+        county_data.rename(columns={
+            'weighted_flood_days': 'flood_days',
+            'weighted_completeness': 'completeness',
             'station_id': 'n_stations',
-            'total_weight': 'total_station_weight',
-            'weight': 'total_reference_weight'
-        })
+            'reference_id': 'n_reference_points'
+        }, inplace=True)
         
-        # Add county metadata from reference points
-        county_meta = reference_points.groupby('county_fips').agg({
-            'county_name': 'first',
-            'state_fips': 'first',
-            'region': 'first',
-            'region_display': 'first'
-        }).reset_index()
+        logger.info(f"Generated flood day estimates for {len(county_data)} county-year combinations")
         
-        county_data = county_data.merge(county_meta, on='county_fips', how='left')
-        
-        logger.info(f"Created county-level aggregations for {len(county_data)} counties")
-        
-        return county_data
-    
-    def _aggregate_unweighted(self, point_data: pd.DataFrame) -> pd.DataFrame:
-        """Simple averaging of reference point data to county level.
-        
-        Args:
-            point_data: DataFrame with reference point HTF data
-            
-        Returns:
-            DataFrame with county-level HTF data
-        """
-        # Group by county
-        county_groups = point_data.groupby(['county_fips', 'county_name', 'state', 'region'])
-        
-        # Calculate metrics
-        county_data = county_groups.agg({
-            'reference_id': 'nunique',
-            'total_weight': 'sum'
-        }).reset_index()
-        
-        # Rename columns
-        county_data = county_data.rename(columns={
-            'reference_id': 'n_reference_points',
-            'total_weight': 'total_station_weight'
-        })
-        
-        logger.info(f"Aggregated {len(point_data)} reference points to {len(county_data)} county records")
-        
-        return county_data
-    
-    def _aggregate_weighted(
-        self,
-        point_data: pd.DataFrame,
-        reference_points: gpd.GeoDataFrame
-    ) -> pd.DataFrame:
-        """Weighted averaging using coastline segment lengths.
-        
-        Args:
-            point_data: DataFrame with reference point HTF data
-            reference_points: GeoDataFrame with reference point geometries
-            
-        Returns:
-            DataFrame with county-level HTF data
-        """
-        # Calculate coastline segment lengths for weighting
-        point_lengths = self._calculate_segment_lengths(reference_points)
-        
-        # Merge lengths with point data
-        weighted_data = point_data.merge(
-            point_lengths,
-            left_on='reference_id',
-            right_index=True,
-            how='left'
-        )
-        
-        # Group by county
-        county_groups = weighted_data.groupby(['county_fips', 'county_name', 'state', 'region'])
-        
-        # Initialize results
-        results = []
-        
-        # Process each group
-        for name, group in county_groups:
-            county_fips, county_name, state, region = name
-            
-            # Calculate metrics
-            result = {
-                'county_fips': county_fips,
-                'county_name': county_name,
-                'state': state,
-                'region': region,
-                'n_reference_points': len(group['reference_id'].unique()),
-                'total_station_weight': group['total_weight'].sum(),
-                'coastline_length_m': group['segment_length'].sum()
-            }
-            
-            results.append(result)
-        
-        # Convert to DataFrame
-        county_data = pd.DataFrame(results)
-            
-        logger.info(f"Aggregated {len(point_data)} reference points to {len(county_data)} county records")
-        
-        return county_data
-    
-    def _calculate_segment_lengths(self, reference_points: gpd.GeoDataFrame) -> pd.Series:
-        """Calculate coastline segment lengths for each reference point.
-        
-        Args:
-            reference_points: GeoDataFrame with reference point geometries
-            
-        Returns:
-            Series with segment lengths indexed by reference_id
-        """
-        # Project to appropriate CRS for accurate distance calculations
-        projected = reference_points.copy()
-        
-        # Calculate segment lengths
-        lengths = pd.Series(
-            index=projected.index,
-            data=projected.geometry.apply(lambda p: self._estimate_segment_length(p))
-        )
-        
-        lengths.index = projected['reference_id']
-        return lengths
-    
-    def _estimate_segment_length(self, point_geom) -> float:
-        """Estimate coastline segment length for a reference point.
-        Uses point spacing as an approximation of segment length.
-        
-        Args:
-            point_geom: Point geometry
-            
-        Returns:
-            Estimated segment length in meters
-        """
-        # Use standard 5km spacing as segment length
-        # This is based on the reference point generation process
-        return 5000.0  # 5km in meters 
+        return county_data 

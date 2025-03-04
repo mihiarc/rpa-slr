@@ -21,26 +21,23 @@ class WeightCalculator:
     def __init__(
         self,
         config_dir: Optional[Path] = None,
-        max_distance_km: float = 100.0,
-        min_weight: float = 0.1,
         idw_power: float = 2.0
     ):
         """Initialize weight calculator.
         
         Args:
             config_dir: Optional custom config directory path
-            max_distance_km: Maximum distance in km for station influence
-            min_weight: Minimum weight to consider a station's influence
             idw_power: Power parameter for inverse distance weighting
         """
         self.config_dir = config_dir or CONFIG_DIR
-        self.max_distance_km = max_distance_km
-        self.min_weight = min_weight
         self.idw_power = idw_power
         
         # Load region configuration
         with open(self.config_dir / "region_mappings.yaml") as f:
             self.region_config = yaml.safe_load(f)
+            
+        logger.info("Initialized weight calculator without distance or weight restrictions")
+        logger.info(f"Using regional filter approach only")
     
     def get_region_projection(self, region: str) -> CRS:
         """Get appropriate projection for a region.
@@ -88,7 +85,7 @@ class WeightCalculator:
         Returns:
             DataFrame with weights for each station-reference point pair
         """
-        logger.info(f"Calculating weights for {region}")
+        logger.info(f"Calculating weights for {region} using regional filtering only")
         
         # Get appropriate projection
         projection = self.get_region_projection(region)
@@ -106,47 +103,22 @@ class WeightCalculator:
             # Convert to kilometers
             distances_km = distances / 1000
             
-            # Filter by maximum distance
-            valid_stations = distances_km <= self.max_distance_km
-            
-            if not valid_stations.any():
-                logger.warning(
-                    f"No stations within {self.max_distance_km}km of reference point "
-                    f"{ref_point['reference_id']}"
-                )
-                continue
-            
-            # Calculate inverse distance weights
-            raw_weights = (1 / distances_km[valid_stations]) ** self.idw_power
+            # No filtering by maximum distance - using all stations in region
+            # Calculate inverse distance weights for all stations
+            raw_weights = (1 / distances_km) ** self.idw_power
             
             # Normalize weights
-            normalized_weights = raw_weights / raw_weights.sum()
-            
-            # Apply minimum weight threshold
-            valid_weights = normalized_weights >= self.min_weight
-            
-            if not valid_weights.any():
-                logger.warning(
-                    f"No stations with weight >= {self.min_weight} for reference point "
-                    f"{ref_point['reference_id']}"
-                )
-                continue
-            
-            # Re-normalize remaining weights
-            final_weights = normalized_weights[valid_weights]
-            final_weights = final_weights / final_weights.sum()
-            
-            # Store results
-            for station_idx, weight in zip(
-                stations_proj.index[valid_stations][valid_weights],
-                final_weights
-            ):
-                weights.append({
-                    'reference_id': ref_point['reference_id'],
-                    'station_id': stations_proj.loc[station_idx, 'station_id'],
-                    'distance_km': distances_km[station_idx],
-                    'weight': weight
-                })
+            if raw_weights.sum() > 0:
+                normalized_weights = raw_weights / raw_weights.sum()
+                
+                # Store results for all stations
+                for station_idx, weight in zip(stations_proj.index, normalized_weights):
+                    weights.append({
+                        'reference_id': ref_point['reference_id'],
+                        'station_id': stations_proj.loc[station_idx, 'station_id'],
+                        'distance_km': distances_km[station_idx],
+                        'weight': weight
+                    })
         
         if not weights:
             logger.error(f"No valid weights calculated for {region}")
