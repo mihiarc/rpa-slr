@@ -22,21 +22,27 @@ ANALYSIS_DIR = OUTPUT_DIR / "analysis"
 IMPUTATION_DIR = OUTPUT_DIR / "imputation"
 HISTORICAL_DIR = OUTPUT_DIR / "historical"
 PROJECTED_DIR = OUTPUT_DIR / "projected"
+COUNTY_SHORELINE_REF_POINTS_DIR = OUTPUT_DIR / "county_shoreline_ref_points"
 
 # Configuration directories
 TIDE_STATIONS_DIR = CONFIG_DIR / "tide_stations"
 REGION_CONFIG = CONFIG_DIR / "region_mappings.yaml"
+COUNTY_REGION_CONFIG = CONFIG_DIR / "county_region_mappings.yaml"
 NOAA_SETTINGS_FILE = CONFIG_DIR / "noaa_api_settings.yaml"
 
 # Load NOAA settings
 with open(NOAA_SETTINGS_FILE) as f:
     NOAA_SETTINGS = yaml.safe_load(f)
 
+# Input data paths
+CENSUS_COUNTY_SHAPEFILE = DATA_DIR / "input" / "shapefile_county_census" / "tl_2024_us_county.shp"
+COASTAL_COUNTIES_CSV = DATA_DIR / "input" / "coastal_counties.csv"
+
 # Common data paths
 SHORELINE_DIR = PROCESSED_DIR / "regional_shorelines"
 COUNTY_FILE = PROCESSED_DIR / "county.parquet"
 COASTAL_COUNTIES_FILE = PROCESSED_DIR / "coastal_counties.parquet"
-REFERENCE_POINTS_FILE = PROCESSED_DIR / "coastal_reference_points.parquet"
+REFERENCE_POINTS_FILE = COUNTY_SHORELINE_REF_POINTS_DIR / "coastal_reference_points.parquet"
 
 # Historical data paths
 HISTORICAL_DATA_DIR = HISTORICAL_DIR / "data"

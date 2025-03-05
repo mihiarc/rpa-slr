@@ -11,6 +11,13 @@ import logging
 import argparse
 import os
 import sys
+from src.config import (
+    CONFIG_DIR,
+    PROCESSED_DIR,
+    COUNTY_REGION_CONFIG,
+    CENSUS_COUNTY_SHAPEFILE,
+    COASTAL_COUNTIES_FILE
+)
 
 # Set up logging
 logging.basicConfig(
@@ -19,36 +26,26 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Define paths directly to avoid circular imports
-SCRIPT_DIR = Path(__file__).parent.resolve()
-ROOT_DIR = SCRIPT_DIR.parent.parent
-CONFIG_DIR = ROOT_DIR / "config"
-DATA_DIR = ROOT_DIR / "data"
-PROCESSED_DIR = DATA_DIR / "processed"
-COUNTY_MAPPINGS_FILE = CONFIG_DIR / "county_region_mappings.yaml"
-CENSUS_COUNTY_FILE = DATA_DIR / "input" / "shapefile_county_census" / "counties.shp"
-COASTAL_COUNTIES_OUTPUT = PROCESSED_DIR / "coastal_counties.parquet"
-
 # Make sure directories exist
 os.makedirs(PROCESSED_DIR, exist_ok=True)
 
 def load_county_mappings():
     """Load county-to-region mappings from YAML configuration."""
-    logger.info(f"Loading county mappings from {COUNTY_MAPPINGS_FILE}")
+    logger.info(f"Loading county mappings from {COUNTY_REGION_CONFIG}")
     
-    with open(COUNTY_MAPPINGS_FILE) as f:
+    with open(COUNTY_REGION_CONFIG) as f:
         config = yaml.safe_load(f)
     
     return config.get("regions", {})
 
 def load_census_counties():
     """Load county geometries from Census shapefile."""
-    logger.info(f"Loading county geometries from {CENSUS_COUNTY_FILE}")
+    logger.info(f"Loading county geometries from {CENSUS_COUNTY_SHAPEFILE}")
     
-    if not Path(CENSUS_COUNTY_FILE).exists():
-        raise FileNotFoundError(f"Census county file not found: {CENSUS_COUNTY_FILE}")
+    if not Path(CENSUS_COUNTY_SHAPEFILE).exists():
+        raise FileNotFoundError(f"Census county file not found: {CENSUS_COUNTY_SHAPEFILE}")
     
-    counties = gpd.read_file(CENSUS_COUNTY_FILE)
+    counties = gpd.read_file(CENSUS_COUNTY_SHAPEFILE)
     logger.info(f"Loaded {len(counties)} counties from Census data")
     
     return counties
@@ -162,10 +159,10 @@ def generate_coastal_counties(region_filter=None):
             return gpd.GeoDataFrame()
         
         # Generate output filename
-        output_file = COASTAL_COUNTIES_OUTPUT
+        output_file = COASTAL_COUNTIES_FILE
         if region_filter:
             # Create region-specific output file
-            output_dir = Path(COASTAL_COUNTIES_OUTPUT).parent
+            output_dir = Path(COASTAL_COUNTIES_FILE).parent
             output_name = f"coastal_counties_{region_filter}.parquet"
             output_file = output_dir / output_name
         
