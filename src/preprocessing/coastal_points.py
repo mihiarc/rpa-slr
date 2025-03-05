@@ -39,13 +39,25 @@ COUNTY_REGION_CONFIG = CONFIG_DIR / "county_region_mappings.yaml"
 
 # Input/output paths
 CENSUS_COUNTY_SHAPEFILE = DATA_DIR / "input" / "shapefile_county_census" / "tl_2024_us_county.shp"
+SHORELINE_INPUT_DIR = DATA_DIR / "input" / "shapefile_shoreline_noaa"
 SHORELINE_DIR = PROCESSED_DIR / "regional_shorelines"
 COASTAL_COUNTIES_FILE = PROCESSED_DIR / "coastal_counties.parquet"
 REFERENCE_POINTS_FILE = COUNTY_SHORELINE_REF_POINTS_DIR / "coastal_reference_points.parquet"
 
+# Shoreline region mapping
+SHORELINE_REGION_MAP = {
+    "west_coast": "Western",
+    "north_atlantic": "North_Atlantic",
+    "mid_atlantic": "North_Atlantic",  # Shared with North Atlantic
+    "south_atlantic": "Southeast_Caribbean",
+    "gulf_coast": "Gulf_Of_Mexico",
+    "pacific_islands": "Pacific_Islands",
+}
+
 # Make sure directories exist
 os.makedirs(PROCESSED_DIR, exist_ok=True)
 os.makedirs(REFERENCE_POINTS_FILE.parent, exist_ok=True)
+os.makedirs(SHORELINE_DIR, exist_ok=True)
 
 def load_region_config():
     """Load region configuration from YAML."""
@@ -105,6 +117,77 @@ def load_census_counties():
     logger.info(f"Loaded {len(counties)} counties from Census data")
     
     return counties
+
+def process_shoreline(region_name):
+    """Process shoreline shapefiles for a region and convert to parquet.
+    
+    Args:
+        region_name: Name of the region to process
+        
+    Returns:
+        Path to the processed shoreline parquet file or None if failed
+    """
+    # Get NOAA shoreline folder name from our mapping
+    if region_name not in SHORELINE_REGION_MAP:
+        logger.warning(f"No shoreline mapping defined for region: {region_name}")
+        return None
+        
+    noaa_region = SHORELINE_REGION_MAP[region_name]
+    shoreline_path = SHORELINE_INPUT_DIR / noaa_region
+    
+    if not shoreline_path.exists():
+        logger.warning(f"Shoreline folder not found: {shoreline_path}")
+        return None
+        
+    logger.info(f"Processing shoreline data from {shoreline_path}")
+    
+    # Check for shapefiles
+    shapefiles = list(shoreline_path.glob("*.shp"))
+    if not shapefiles:
+        logger.warning(f"No shapefiles found in {shoreline_path}")
+        return None
+        
+    logger.info(f"Found {len(shapefiles)} shoreline shapefiles")
+    
+    # Load and combine shapefiles
+    shoreline_gdfs = []
+    for shapefile in shapefiles:
+        try:
+            logger.info(f"Loading shapefile: {shapefile.name}")
+            gdf = gpd.read_file(shapefile)
+            
+            # Check if it's empty
+            if gdf.empty:
+                logger.warning(f"Empty shapefile: {shapefile.name}")
+                continue
+                
+            # Make sure it has geometry
+            if 'geometry' not in gdf.columns:
+                logger.warning(f"No geometry column in shapefile: {shapefile.name}")
+                continue
+                
+            # Keep only geometry columns to reduce size
+            gdf = gdf[['geometry']]
+            
+            shoreline_gdfs.append(gdf)
+        except Exception as e:
+            logger.error(f"Error loading shapefile {shapefile.name}: {str(e)}")
+            continue
+    
+    if not shoreline_gdfs:
+        logger.error("No valid shoreline data loaded")
+        return None
+        
+    # Combine all shapefiles
+    combined_shoreline = pd.concat(shoreline_gdfs, ignore_index=True)
+    shoreline_gdf = gpd.GeoDataFrame(combined_shoreline, geometry='geometry', crs="EPSG:4326")
+    
+    # Create output file
+    output_file = SHORELINE_DIR / f"{region_name}.parquet"
+    shoreline_gdf.to_parquet(output_file, compression='snappy', index=False)
+    logger.info(f"Saved processed shoreline to {output_file}")
+    
+    return output_file
 
 def generate_coastal_counties(region_filter=None):
     """Generate coastal counties from predefined list.
@@ -382,9 +465,15 @@ def generate_coastal_points(region_filter=None) -> gpd.GeoDataFrame:
             
             region_file = SHORELINE_DIR / f"{region_name}.parquet"
             
+            # If shoreline file doesn't exist, try to process it from shapefiles
             if not region_file.exists():
-                logger.warning(f"Shoreline file not found for {region_name}: {region_file}")
-                continue
+                logger.info(f"Shoreline file not found: {region_file}")
+                logger.info(f"Attempting to process shoreline from source shapefiles...")
+                
+                region_file = process_shoreline(region_name)
+                if region_file is None or not region_file.exists():
+                    logger.warning(f"Failed to process shoreline for {region_name}")
+                    continue
             
             # Load regional shoreline
             logger.info(f"Loading shoreline for {region_name}...")
