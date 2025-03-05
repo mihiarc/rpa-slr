@@ -14,6 +14,13 @@ import argparse
 import pandas as pd
 import os
 import sys
+from src.config import (
+    CONFIG_DIR,
+    PROCESSED_DIR,
+    SHORELINE_DIR,
+    COASTAL_COUNTIES_FILE,
+    REFERENCE_POINTS_FILE
+)
 
 # Set up logging manually without dependencies
 logging.basicConfig(
@@ -25,17 +32,9 @@ logger = logging.getLogger(__name__)
 # Point spacing in meters (5km)
 POINT_SPACING_M = 5000
 
-# Define paths directly to avoid circular imports
-SCRIPT_DIR = Path(__file__).parent.resolve()
-ROOT_DIR = SCRIPT_DIR.parent.parent
-CONFIG_DIR = ROOT_DIR / "config"
-PROCESSED_DIR = ROOT_DIR / "data" / "processed"
-SHORELINE_DIR = PROCESSED_DIR / "shoreline"
-COASTAL_COUNTIES_FILE = ROOT_DIR / "data" / "input" / "coastal_counties.parquet"
-REFERENCE_POINTS_FILE = PROCESSED_DIR / "reference_points.parquet"
-
 # Make sure directories exist
 os.makedirs(PROCESSED_DIR, exist_ok=True)
+os.makedirs(REFERENCE_POINTS_FILE.parent, exist_ok=True)
 
 def load_region_config():
     """Load region configuration from YAML."""
@@ -200,13 +199,43 @@ def generate_coastal_points(region_filter=None) -> gpd.GeoDataFrame:
             available_regions = ", ".join(regions_config.keys())
             raise ValueError(f"Invalid region: {region_filter}. Available regions: {available_regions}")
         
-        # Load coastal counties
+        # Load coastal counties from predefined list
         logger.info("Loading coastal counties...")
-        counties_file = COASTAL_COUNTIES_FILE
-        if not counties_file.exists():
-            raise FileNotFoundError(f"Coastal counties file not found: {counties_file}")
-            
-        counties = gpd.read_parquet(counties_file)
+        
+        # First check if there's a region-specific coastal counties file
+        if region_filter:
+            region_counties_file = COASTAL_COUNTIES_FILE.parent / f"coastal_counties_{region_filter}.parquet"
+            if region_counties_file.exists():
+                logger.info(f"Found region-specific coastal counties file: {region_counties_file}")
+                counties = gpd.read_parquet(region_counties_file)
+            else:
+                # Try to use the main coastal counties file
+                if not COASTAL_COUNTIES_FILE.exists():
+                    logger.warning(f"Coastal counties file not found: {COASTAL_COUNTIES_FILE}")
+                    logger.info("Generating coastal counties from predefined list...")
+                    # Import and run the predefined coastal counties script
+                    from src.preprocessing.predefined_coastal_counties import generate_coastal_counties
+                    counties = generate_coastal_counties(region_filter=region_filter)
+                else:
+                    # Load the main file and filter by region
+                    counties = gpd.read_parquet(COASTAL_COUNTIES_FILE)
+                    counties = counties[counties['region'] == region_filter]
+        else:
+            # No region filter, use the main coastal counties file
+            if not COASTAL_COUNTIES_FILE.exists():
+                logger.warning(f"Coastal counties file not found: {COASTAL_COUNTIES_FILE}")
+                logger.info("Generating coastal counties from predefined list...")
+                # Import and run the predefined coastal counties script
+                from src.preprocessing.predefined_coastal_counties import generate_coastal_counties
+                counties = generate_coastal_counties()
+            else:
+                counties = gpd.read_parquet(COASTAL_COUNTIES_FILE)
+        
+        if counties.empty:
+            logger.error("No coastal counties found")
+            return gpd.GeoDataFrame()
+        
+        logger.info(f"Loaded {len(counties)} coastal counties")
         
         region_gdfs = []
         
