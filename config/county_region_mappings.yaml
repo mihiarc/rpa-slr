@@ -1,0 +1,412 @@
+metadata:
+  source: "NOAA Tides and Currents - County Level Tidal Flooding Project"
+  last_updated: '2024-06-08'
+  description: "County to region mappings for high tide flooding data processing"
+
+# Counties grouped by region based on state codes from region_mappings.yaml
+regions:
+  west_coast:
+    name: "West Coast"
+    counties:
+      # California counties
+      - {fips: "06001", name: "ALAMEDA, CA"}
+      - {fips: "06013", name: "CONTRA COSTA, CA"}
+      - {fips: "06015", name: "DEL NORTE, CA"}
+      - {fips: "06023", name: "HUMBOLDT, CA"}
+      - {fips: "06037", name: "LOS ANGELES, CA"}
+      - {fips: "06041", name: "MARIN, CA"}
+      - {fips: "06045", name: "MENDOCINO, CA"}
+      - {fips: "06053", name: "MONTEREY, CA"}
+      - {fips: "06059", name: "ORANGE, CA"}
+      - {fips: "06073", name: "SAN DIEGO, CA"}
+      - {fips: "06075", name: "SAN FRANCISCO, CA"}
+      - {fips: "06079", name: "SAN LUIS OBISPO, CA"}
+      - {fips: "06081", name: "SAN MATEO, CA"}
+      - {fips: "06083", name: "SANTA BARBARA, CA"}
+      - {fips: "06085", name: "SANTA CLARA, CA"}
+      - {fips: "06087", name: "SANTA CRUZ, CA"}
+      - {fips: "06095", name: "SOLANO, CA"}
+      - {fips: "06097", name: "SONOMA, CA"}
+      - {fips: "06111", name: "VENTURA, CA"}
+      
+      # Oregon counties
+      - {fips: "41007", name: "CLATSOP, OR"}
+      - {fips: "41009", name: "COLUMBIA, OR"}
+      - {fips: "41011", name: "COOS, OR"}
+      - {fips: "41015", name: "CURRY, OR"}
+      - {fips: "41019", name: "DOUGLAS, OR"}
+      - {fips: "41039", name: "LANE, OR"}
+      - {fips: "41041", name: "LINCOLN, OR"}
+      - {fips: "41051", name: "MULTNOMAH, OR"}
+      - {fips: "41057", name: "TILLAMOOK, OR"}
+      
+      # Washington counties
+      - {fips: "53009", name: "CLALLAM, WA"}
+      - {fips: "53011", name: "CLARK, WA"}
+      - {fips: "53015", name: "COWLITZ, WA"}
+      - {fips: "53027", name: "GRAYS HARBOR, WA"}
+      - {fips: "53029", name: "ISLAND, WA"}
+      - {fips: "53031", name: "JEFFERSON, WA"}
+      - {fips: "53033", name: "KING, WA"}
+      - {fips: "53035", name: "KITSAP, WA"}
+      - {fips: "53045", name: "MASON, WA"}
+      - {fips: "53049", name: "PACIFIC, WA"}
+      - {fips: "53053", name: "PIERCE, WA"}
+      - {fips: "53055", name: "SAN JUAN, WA"}
+      - {fips: "53057", name: "SKAGIT, WA"}
+      - {fips: "53059", name: "SKAMANIA, WA"}
+      - {fips: "53061", name: "SNOHOMISH, WA"}
+      - {fips: "53067", name: "THURSTON, WA"}
+      - {fips: "53069", name: "WAHKIAKUM, WA"}
+      - {fips: "53073", name: "WHATCOM, WA"}
+
+  north_atlantic:
+    name: "North Atlantic"
+    counties:
+      # Maine counties
+      - {fips: "23005", name: "CUMBERLAND, ME"}
+      - {fips: "23009", name: "HANCOCK, ME"}
+      - {fips: "23013", name: "KNOX, ME"}
+      - {fips: "23015", name: "LINCOLN, ME"}
+      - {fips: "23023", name: "SAGADAHOC, ME"}
+      - {fips: "23027", name: "WALDO, ME"}
+      - {fips: "23029", name: "WASHINGTON, ME"}
+      - {fips: "23031", name: "YORK, ME"}
+      
+      # Connecticut counties
+      - {fips: "09001", name: "FAIRFIELD, CT"}
+      - {fips: "09007", name: "MIDDLESEX, CT"}
+      - {fips: "09009", name: "NEW HAVEN, CT"}
+      - {fips: "09011", name: "NEW LONDON, CT"}
+      
+      # Massachusetts counties
+      - {fips: "25001", name: "BARNSTABLE, MA"}
+      - {fips: "25005", name: "BRISTOL, MA"}
+      - {fips: "25007", name: "DUKES, MA"}
+      - {fips: "25009", name: "ESSEX, MA"}
+      - {fips: "25019", name: "NANTUCKET, MA"}
+      - {fips: "25021", name: "NORFOLK, MA"}
+      - {fips: "25023", name: "PLYMOUTH, MA"}
+      - {fips: "25025", name: "SUFFOLK, MA"}
+      
+      # Rhode Island counties
+      - {fips: "44001", name: "BRISTOL, RI"}
+      - {fips: "44003", name: "KENT, RI"}
+      - {fips: "44005", name: "NEWPORT, RI"}
+      - {fips: "44007", name: "PROVIDENCE, RI"}
+      - {fips: "44009", name: "WASHINGTON, RI"}
+
+  mid_atlantic:
+    name: "Mid Atlantic"
+    counties:
+      # New York counties
+      - {fips: "36005", name: "BRONX, NY"}
+      - {fips: "36047", name: "KINGS, NY"}
+      - {fips: "36059", name: "NASSAU, NY"}
+      - {fips: "36061", name: "NEW YORK, NY"}
+      - {fips: "36081", name: "QUEENS, NY"}
+      - {fips: "36085", name: "RICHMOND, NY"}
+      - {fips: "36087", name: "ROCKLAND, NY"}
+      - {fips: "36103", name: "SUFFOLK, NY"}
+      - {fips: "36119", name: "WESTCHESTER, NY"}
+      
+      # New Jersey counties
+      - {fips: "34001", name: "ATLANTIC, NJ"}
+      - {fips: "34003", name: "BERGEN, NJ"}
+      - {fips: "34007", name: "CAMDEN, NJ"}
+      - {fips: "34009", name: "CAPE MAY, NJ"}
+      - {fips: "34011", name: "CUMBERLAND, NJ"}
+      - {fips: "34013", name: "ESSEX, NJ"}
+      - {fips: "34015", name: "GLOUCESTER, NJ"}
+      - {fips: "34017", name: "HUDSON, NJ"}
+      - {fips: "34023", name: "MIDDLESEX, NJ"}
+      - {fips: "34025", name: "MONMOUTH, NJ"}
+      - {fips: "34029", name: "OCEAN, NJ"}
+      - {fips: "34033", name: "SALEM, NJ"}
+      - {fips: "34039", name: "UNION, NJ"}
+      
+      # Delaware counties
+      - {fips: "10001", name: "KENT, DE"}
+      - {fips: "10003", name: "NEW CASTLE, DE"}
+      - {fips: "10005", name: "SUSSEX, DE"}
+      
+      # Maryland counties
+      - {fips: "24003", name: "ANNE ARUNDEL, MD"}
+      - {fips: "24005", name: "BALTIMORE, MD"}
+      - {fips: "24009", name: "CALVERT, MD"}
+      - {fips: "24011", name: "CAROLINE, MD"}
+      - {fips: "24015", name: "CECIL, MD"}
+      - {fips: "24017", name: "CHARLES, MD"}
+      - {fips: "24019", name: "DORCHESTER, MD"}
+      - {fips: "24025", name: "HARFORD, MD"}
+      - {fips: "24029", name: "KENT, MD"}
+      - {fips: "24033", name: "PRINCE GEORGES, MD"}
+      - {fips: "24035", name: "QUEEN ANNES, MD"}
+      - {fips: "24037", name: "ST. MARYS, MD"}
+      - {fips: "24039", name: "SOMERSET, MD"}
+      - {fips: "24041", name: "TALBOT, MD"}
+      - {fips: "24045", name: "WICOMICO, MD"}
+      - {fips: "24047", name: "WORCESTER, MD"}
+      - {fips: "24510", name: "BALTIMORE (INDEPENDENT CITY), MD"}
+      
+      # Virginia counties (partial - only those in mid-atlantic region)
+      - {fips: "51001", name: "ACCOMACK, VA"}
+      - {fips: "51013", name: "ARLINGTON, VA"}
+      - {fips: "51036", name: "CHARLES CITY, VA"}
+      - {fips: "51057", name: "ESSEX, VA"}
+      - {fips: "51073", name: "GLOUCESTER, VA"}
+      - {fips: "51093", name: "ISLE OF WIGHT, VA"}
+      - {fips: "51097", name: "KING AND QUEEN, VA"}
+      - {fips: "51099", name: "KING GEORGE, VA"}
+      - {fips: "51101", name: "KING WILLIAM, VA"}
+      - {fips: "51103", name: "LANCASTER, VA"}
+      - {fips: "51115", name: "MATHEWS, VA"}
+      - {fips: "51119", name: "MIDDLESEX, VA"}
+      - {fips: "51127", name: "NEW KENT, VA"}
+      - {fips: "51131", name: "NORTHAMPTON, VA"}
+      - {fips: "51133", name: "NORTHUMBERLAND, VA"}
+      - {fips: "51159", name: "RICHMOND, VA"}
+      - {fips: "51181", name: "SURRY, VA"}
+      - {fips: "51193", name: "WESTMORELAND, VA"}
+      - {fips: "51650", name: "HAMPTON (INDEPENDENT CITY), VA"}
+      - {fips: "51700", name: "NEWPORT NEWS (INDEPENDENT CITY), VA"}
+      - {fips: "51710", name: "NORFOLK (INDEPENDENT CITY), VA"}
+      - {fips: "51740", name: "PORTSMOUTH (INDEPENDENT CITY), VA"}
+      - {fips: "51800", name: "SUFFOLK (INDEPENDENT CITY), VA"}
+      - {fips: "51810", name: "VIRGINIA BEACH (INDEPENDENT CITY), VA"}
+      - {fips: "51919", name: "FAIRFAX + FAIRFAX CITY + FALLS CHURCH, VA"}
+      - {fips: "51931", name: "JAMES CITY + WILLIAMSBURG, VA"}
+      - {fips: "51941", name: "PRINCE GEORGE + HOPEWELL, VA"}
+      - {fips: "51958", name: "YORK + POQUOSON, VA"}
+      
+      # DC
+      - {fips: "11001", name: "DISTRICT OF COLUMBIA, DC"}
+
+  south_atlantic:
+    name: "South Atlantic"
+    counties:
+      # North Carolina counties
+      - {fips: "37013", name: "BEAUFORT, NC"}
+      - {fips: "37015", name: "BERTIE, NC"}
+      - {fips: "37019", name: "BRUNSWICK, NC"}
+      - {fips: "37029", name: "CAMDEN, NC"}
+      - {fips: "37031", name: "CARTERET, NC"}
+      - {fips: "37041", name: "CHOWAN, NC"}
+      - {fips: "37049", name: "CRAVEN, NC"}
+      - {fips: "37053", name: "CURRITUCK, NC"}
+      - {fips: "37055", name: "DARE, NC"}
+      - {fips: "37095", name: "HYDE, NC"}
+      - {fips: "37129", name: "NEW HANOVER, NC"}
+      - {fips: "37133", name: "ONSLOW, NC"}
+      - {fips: "37137", name: "PAMLICO, NC"}
+      - {fips: "37139", name: "PASQUOTANK, NC"}
+      - {fips: "37141", name: "PENDER, NC"}
+      - {fips: "37143", name: "PERQUIMANS, NC"}
+      - {fips: "37177", name: "TYRRELL, NC"}
+      - {fips: "37187", name: "WASHINGTON, NC"}
+      
+      # South Carolina counties
+      - {fips: "45013", name: "BEAUFORT, SC"}
+      - {fips: "45019", name: "CHARLESTON, SC"}
+      - {fips: "45029", name: "COLLETON, SC"}
+      - {fips: "45043", name: "GEORGETOWN, SC"}
+      - {fips: "45051", name: "HORRY, SC"}
+      - {fips: "45053", name: "JASPER, SC"}
+      
+      # Georgia counties
+      - {fips: "13029", name: "BRYAN, GA"}
+      - {fips: "13039", name: "CAMDEN, GA"}
+      - {fips: "13049", name: "CHARLTON, GA"}
+      - {fips: "13051", name: "CHATHAM, GA"}
+      - {fips: "13127", name: "GLYNN, GA"}
+      - {fips: "13179", name: "LIBERTY, GA"}
+      - {fips: "13191", name: "MCINTOSH, GA"}
+      
+      # Florida Atlantic coast counties
+      - {fips: "12009", name: "BREVARD, FL"}
+      - {fips: "12011", name: "BROWARD, FL"}
+      - {fips: "12031", name: "DUVAL, FL"}
+      - {fips: "12035", name: "FLAGLER, FL"}
+      - {fips: "12061", name: "INDIAN RIVER, FL"}
+      - {fips: "12085", name: "MARTIN, FL"}
+      - {fips: "12086", name: "MIAMI-DADE, FL"}
+      - {fips: "12099", name: "PALM BEACH, FL"}
+      - {fips: "12109", name: "ST. JOHNS, FL"}
+      - {fips: "12111", name: "ST. LUCIE, FL"}
+      - {fips: "12127", name: "VOLUSIA, FL"}
+
+  gulf_coast:
+    name: "Gulf Coast"
+    counties:
+      # Florida Gulf coast counties
+      - {fips: "12005", name: "BAY, FL"}
+      - {fips: "12015", name: "CHARLOTTE, FL"}
+      - {fips: "12017", name: "CITRUS, FL"}
+      - {fips: "12021", name: "COLLIER, FL"}
+      - {fips: "12029", name: "DIXIE, FL"}
+      - {fips: "12033", name: "ESCAMBIA, FL"}
+      - {fips: "12037", name: "FRANKLIN, FL"}
+      - {fips: "12045", name: "GULF, FL"}
+      - {fips: "12053", name: "HERNANDO, FL"}
+      - {fips: "12057", name: "HILLSBOROUGH, FL"}
+      - {fips: "12065", name: "JEFFERSON, FL"}
+      - {fips: "12071", name: "LEE, FL"}
+      - {fips: "12075", name: "LEVY, FL"}
+      - {fips: "12081", name: "MANATEE, FL"}
+      - {fips: "12087", name: "MONROE, FL"}
+      - {fips: "12091", name: "OKALOOSA, FL"}
+      - {fips: "12101", name: "PASCO, FL"}
+      - {fips: "12103", name: "PINELLAS, FL"}
+      - {fips: "12113", name: "SANTA ROSA, FL"}
+      - {fips: "12115", name: "SARASOTA, FL"}
+      - {fips: "12123", name: "TAYLOR, FL"}
+      - {fips: "12129", name: "WAKULLA, FL"}
+      - {fips: "12131", name: "WALTON, FL"}
+      
+      # Alabama counties
+      - {fips: "01003", name: "BALDWIN, AL"}
+      - {fips: "01097", name: "MOBILE, AL"}
+      
+      # Mississippi counties
+      - {fips: "28045", name: "HANCOCK, MS"}
+      - {fips: "28047", name: "HARRISON, MS"}
+      - {fips: "28059", name: "JACKSON, MS"}
+      
+      # Louisiana counties
+      - {fips: "22005", name: "ASCENSION, LA"}
+      - {fips: "22007", name: "ASSUMPTION, LA"}
+      - {fips: "22019", name: "CALCASIEU, LA"}
+      - {fips: "22023", name: "CAMERON, LA"}
+      - {fips: "22045", name: "IBERIA, LA"}
+      - {fips: "22051", name: "JEFFERSON, LA"}
+      - {fips: "22057", name: "LAFOURCHE, LA"}
+      - {fips: "22063", name: "LIVINGSTON, LA"}
+      - {fips: "22071", name: "ORLEANS, LA"}
+      - {fips: "22075", name: "PLAQUEMINES, LA"}
+      - {fips: "22087", name: "ST. BERNARD, LA"}
+      - {fips: "22089", name: "ST. CHARLES, LA"}
+      - {fips: "22093", name: "ST. JAMES, LA"}
+      - {fips: "22095", name: "ST. JOHN THE BAPTIST, LA"}
+      - {fips: "22101", name: "ST. MARY, LA"}
+      - {fips: "22103", name: "ST. TAMMANY, LA"}
+      - {fips: "22105", name: "TANGIPAHOA, LA"}
+      - {fips: "22109", name: "TERREBONNE, LA"}
+      - {fips: "22113", name: "VERMILION, LA"}
+      
+      # Texas counties
+      - {fips: "48007", name: "ARANSAS, TX"}
+      - {fips: "48039", name: "BRAZORIA, TX"}
+      - {fips: "48057", name: "CALHOUN, TX"}
+      - {fips: "48061", name: "CAMERON, TX"}
+      - {fips: "48071", name: "CHAMBERS, TX"}
+      - {fips: "48167", name: "GALVESTON, TX"}
+      - {fips: "48201", name: "HARRIS, TX"}
+      - {fips: "48245", name: "JEFFERSON, TX"}
+      - {fips: "48261", name: "KENEDY, TX"}
+      - {fips: "48273", name: "KLEBERG, TX"}
+      - {fips: "48321", name: "MATAGORDA, TX"}
+      - {fips: "48355", name: "NUECES, TX"}
+      - {fips: "48361", name: "ORANGE, TX"}
+      - {fips: "48391", name: "REFUGIO, TX"}
+      - {fips: "48409", name: "SAN PATRICIO, TX"}
+      - {fips: "48469", name: "VICTORIA, TX"}
+      - {fips: "48489", name: "WILLACY, TX"}
+
+  alaska:
+    name: "Alaska"
+    counties:
+      - {fips: "02013", name: "Aleutians East Borough, AK"}
+      - {fips: "02016", name: "Aleutians West Census Area, AK"}
+      - {fips: "02020", name: "ANCHORAGE BOROUGH, AK"}
+      - {fips: "02050", name: "Bethel Census Area, AK"}
+      - {fips: "02060", name: "BRISTOL BAY BOROUGH, AK"}
+      - {fips: "02070", name: "Dillingham Census Area + Lake and Peninsula, AK"}
+      - {fips: "02100", name: "Haines Borough, AK"}
+      - {fips: "02110", name: "JUNEAU BOROUGH, AK"}
+      - {fips: "02122", name: "Kenai Peninsula Borough, AK"}
+      - {fips: "02130", name: "KETCHIKAN GATEWAY BOROUGH, AK"}
+      - {fips: "02150", name: "KODIAK ISLAND BOROUGH, AK"}
+      - {fips: "02170", name: "MATANUSKA-SUSITNA BOROUGH, AK"}
+      - {fips: "02180", name: "NOME CENSUS AREA, AK"}
+      - {fips: "02185", name: "North Slope Borough, AK"}
+      - {fips: "02188", name: "NORTHWEST ARCTIC BOROUGH, AK"}
+      - {fips: "02201", name: "Prince of Wales-Hyder Census Area, AK"}
+      - {fips: "02220", name: "Sitka City and Borough, AK"}
+      - {fips: "02231", name: "Skagway-Yakutat-Angoon Census Area, AK"}
+      - {fips: "02261", name: "Valdez-Cordova Census Area, AK"}
+      - {fips: "02270", name: "Kusilvak Census Area, AK"}
+      - {fips: "02280", name: "Wrangell-Petersburg Census Area, AK"}
+
+  hawaii:
+    name: "Hawaii"
+    counties:
+      - {fips: "15001", name: "HAWAII, HI"}
+      - {fips: "15003", name: "HONOLULU, HI"}
+      - {fips: "15007", name: "KAUAI, HI"}
+      - {fips: "15901", name: "MAUI + KALAWAO, HI"}
+
+  puerto_rico:
+    name: "Puerto Rico"
+    counties:
+      - {fips: "72003", name: "Aguada Municipio, PR"}
+      - {fips: "72005", name: "Aguadilla Municipio, PR"}
+      - {fips: "72011", name: "Añasco Municipio, PR"}
+      - {fips: "72013", name: "Arecibo Municipio, PR"}
+      - {fips: "72015", name: "Arroyo Municipio, PR"}
+      - {fips: "72017", name: "Barceloneta Municipio, PR"}
+      - {fips: "72021", name: "Bayamón Municipio, PR"}
+      - {fips: "72023", name: "Cabo Rojo Municipio, PR"}
+      - {fips: "72027", name: "Camuy Municipio, PR"}
+      - {fips: "72029", name: "Canóvanas Municipio, PR"}
+      - {fips: "72031", name: "Carolina Municipio, PR"}
+      - {fips: "72033", name: "Cataño Municipio, PR"}
+      - {fips: "72037", name: "Ceiba Municipio, PR"}
+      - {fips: "72049", name: "Culebra Municipio, PR"}
+      - {fips: "72051", name: "Dorado Municipio, PR"}
+      - {fips: "72053", name: "Fajardo Municipio, PR"}
+      - {fips: "72055", name: "Guánica Municipio, PR"}
+      - {fips: "72057", name: "Guayama Municipio, PR"}
+      - {fips: "72059", name: "Guayanilla Municipio, PR"}
+      - {fips: "72061", name: "Guaynabo Municipio, PR"}
+      - {fips: "72065", name: "Hatillo Municipio, PR"}
+      - {fips: "72067", name: "Hormigueros Municipio, PR"}
+      - {fips: "72069", name: "Humacao Municipio, PR"}
+      - {fips: "72071", name: "Isabela Municipio, PR"}
+      - {fips: "72075", name: "Juana Díaz Municipio, PR"}
+      - {fips: "72079", name: "Lajas Municipio, PR"}
+      - {fips: "72083", name: "Las Marías Municipio, PR"}
+      - {fips: "72087", name: "Loíza Municipio, PR"}
+      - {fips: "72089", name: "Luquillo Municipio, PR"}
+      - {fips: "72091", name: "Manatí Municipio, PR"}
+      - {fips: "72095", name: "Maunabo Municipio, PR"}
+      - {fips: "72097", name: "Mayagüez Municipio, PR"}
+      - {fips: "72099", name: "Moca Municipio, PR"}
+      - {fips: "72103", name: "Naguabo Municipio, PR"}
+      - {fips: "72109", name: "Patillas Municipio, PR"}
+      - {fips: "72111", name: "Peñuelas Municipio, PR"}
+      - {fips: "72113", name: "Ponce Municipio, PR"}
+      - {fips: "72115", name: "Quebradillas Municipio, PR"}
+      - {fips: "72117", name: "Rincón Municipio, PR"}
+      - {fips: "72119", name: "Río Grande Municipio, PR"}
+      - {fips: "72123", name: "Salinas Municipio, PR"}
+      - {fips: "72127", name: "San Juan Municipio, PR"}
+      - {fips: "72131", name: "San Sebastián Municipio, PR"}
+      - {fips: "72133", name: "Santa Isabel Municipio, PR"}
+      - {fips: "72137", name: "Toa Baja Municipio, PR"}
+      - {fips: "72143", name: "Vega Alta Municipio, PR"}
+      - {fips: "72145", name: "Vega Baja Municipio, PR"}
+      - {fips: "72147", name: "Vieques Municipio, PR"}
+      - {fips: "72151", name: "Yabucoa Municipio, PR"}
+      - {fips: "72153", name: "Yauco Municipio, PR"}
+
+  virgin_islands:
+    name: "Virgin Islands"
+    counties:
+      - {fips: "78010", name: "St. Croix Island, USVI"}
+      - {fips: "78020", name: "St. John Island, USVI"}
+      - {fips: "78030", name: "St. Thomas Island, USVI"}
+
+  # Note: The pacific_islands region doesn't have counties listed in the coastal_counties.csv
+  pacific_islands:
+    name: "Pacific Islands"
+    counties: [] 
