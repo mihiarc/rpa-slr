@@ -10,83 +10,99 @@ from pathlib import Path
 import yaml
 import logging
 from typing import List, Dict
-from tqdm import tqdm
 import argparse
-from src.config import (
-    CONFIG_DIR,
-    PROCESSED_DIR,
-    SHORELINE_DIR,
-    COASTAL_COUNTIES_FILE,
-    REFERENCE_POINTS_FILE
-)
 import pandas as pd
+import os
+import sys
 
+# Set up logging manually without dependencies
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # Point spacing in meters (5km)
 POINT_SPACING_M = 5000
 
+# Define paths directly to avoid circular imports
+SCRIPT_DIR = Path(__file__).parent.resolve()
+ROOT_DIR = SCRIPT_DIR.parent.parent
+CONFIG_DIR = ROOT_DIR / "config"
+PROCESSED_DIR = ROOT_DIR / "data" / "processed"
+SHORELINE_DIR = PROCESSED_DIR / "shoreline"
+COASTAL_COUNTIES_FILE = ROOT_DIR / "data" / "input" / "coastal_counties.parquet"
+REFERENCE_POINTS_FILE = PROCESSED_DIR / "reference_points.parquet"
+
+# Make sure directories exist
+os.makedirs(PROCESSED_DIR, exist_ok=True)
+
 def load_region_config():
     """Load region configuration from YAML."""
     with open(CONFIG_DIR / "region_mappings.yaml") as f:
         config = yaml.safe_load(f)
-    return config['regions']
+    return config.get('regions', {})
 
 def get_region_projection(region_name: str, region_def: dict) -> str:
-    """Get the appropriate projection for a region.
+    """Get proper projection for distance calculations in a region.
     
     Args:
         region_name: Name of the region
-        region_def: Region definition from config
-    
+        region_def: Region definition dictionary
+        
     Returns:
-        Projection string for the region
+        EPSG code for the region's UTM zone
     """
-    # Use region-specific projection if defined in config
-    if 'projection' in region_def:
-        proj = region_def['projection']
-        logger.info(f"Using config-defined projection for {region_name}: {proj}")
-        return proj
+    bounds = region_def.get('bounds', {})
+    # Default to center of region for UTM zone calculation
+    center_lon = (bounds.get('min_lon', -98) + bounds.get('max_lon', -80)) / 2
     
-    # Default projections for specific regions
-    if region_name == 'alaska':
-        proj = ("+proj=aea +lat_1=55 +lat_2=65 +lat_0=50 +lon_0=-154 "
-                "+x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
-        logger.info(f"Using Alaska-specific projection: {proj}")
-        return proj
-    elif region_name in ['west_coast', 'pacific_islands']:
-        proj = ("+proj=aea +lat_1=34 +lat_2=45.5 +lat_0=40 +lon_0=-120 "
-                "+x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
-        logger.info(f"Using West Coast/Pacific projection for {region_name}: {proj}")
-        return proj
+    # Calculate UTM zone from longitude (simplified)
+    utm_zone = int((center_lon + 180) // 6) + 1
     
-    # Default to continental US Albers Equal Area
-    proj = ("+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 "
-            "+x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
-    logger.info(f"Using default CONUS projection for {region_name}: {proj}")
-    return proj
+    # North/South UTM
+    center_lat = (bounds.get('min_lat', 25) + bounds.get('max_lat', 45)) / 2
+    hem = "north" if center_lat >= 0 else "south"
+    
+    logger.info(f"Using UTM zone {utm_zone}{hem} for {region_name}")
+    
+    # EPSG code for UTM zone
+    if hem == "north":
+        epsg = f"EPSG:{32600 + utm_zone}"
+    else:
+        epsg = f"EPSG:{32700 + utm_zone}"
+    
+    return epsg
 
 def create_reference_points(line: LineString, spacing: float = POINT_SPACING_M) -> List[Point]:
-    """Create evenly spaced points along a line.
+    """Create evenly spaced points along a linestring.
     
     Args:
-        line: Input LineString
-        spacing: Distance between points in meters
-    
+        line: LineString to create points along
+        spacing: Spacing between points in projected units (meters)
+        
     Returns:
-        List of Point objects
+        List of Points spaced evenly along the line
     """
-    # Get line length
+    # Skip if line is empty
+    if line.is_empty:
+        return []
+    
+    # Get length of line
     length = line.length
     
-    # Calculate number of points (minimum 2)
-    num_points = max(2, int(length / spacing))
+    # Calculate number of points to create
+    n_points = max(1, int(length / spacing))
     
-    # Generate points at regular intervals
-    points = [
-        line.interpolate(i / (num_points - 1), normalized=True)
-        for i in range(num_points)
-    ]
+    # Create evenly spaced points along the line
+    points = []
+    for i in range(n_points):
+        distance = i * spacing
+        # Get point at distance along line
+        if distance > length:
+            break
+        point = line.interpolate(distance)
+        points.append(point)
     
     return points
 
@@ -94,60 +110,75 @@ def process_region(shoreline_gdf: gpd.GeoDataFrame,
                   counties: gpd.GeoDataFrame, 
                   region_name: str,
                   region_def: dict) -> List[Dict]:
-    """Process a single region to generate reference points.
+    """Process a region to create reference points.
     
     Args:
-        shoreline_gdf: GeoDataFrame containing the region's shoreline
-        counties: GeoDataFrame containing coastal counties for this region
+        shoreline_gdf: GeoDataFrame with shoreline geometries for the region
+        counties: GeoDataFrame with coastal counties
         region_name: Name of the region
-        region_def: Region definition from config
+        region_def: Configuration for the region
         
     Returns:
-        List of dictionaries containing point data
+        List of dictionaries with reference point information
     """
-    logger.info(f"\nProcessing region: {region_name}")
+    logger.info(f"Processing {len(shoreline_gdf)} shoreline features for {region_name}")
+    
+    # Get regional projection for accurate distance calculations
+    region_proj = get_region_projection(region_name, region_def)
+    
+    # Get counties for this region
+    region_counties = counties[counties['region'] == region_name]
+    
+    if len(region_counties) == 0:
+        logger.warning(f"No coastal counties found for {region_name}")
+        return []
+        
+    logger.info(f"Found {len(region_counties)} counties in {region_name}")
+    
+    # Reproject shoreline and counties to regional projection
+    shoreline_projected = shoreline_gdf.to_crs(region_proj)
+    counties_projected = region_counties.to_crs(region_proj)
+    
+    # Create reference points
     reference_points = []
     
-    # Get region-specific projection
-    projection = get_region_projection(region_name, region_def)
-    
-    # Project to appropriate CRS for accurate distances
-    shoreline_proj = shoreline_gdf.to_crs(projection)
-    counties_proj = counties.to_crs(projection)
-    
-    # Process each county with progress bar
-    for idx, county in tqdm(counties_proj.iterrows(), total=len(counties_proj), 
-                          desc=f"Processing {region_name} counties"):
-        # Intersect county with coastline
-        county_coastline = shoreline_proj.clip(county.geometry)
-        
-        if len(county_coastline) == 0:
+    # Process each shoreline segment
+    for i, row in shoreline_projected.iterrows():
+        line = row['geometry']
+        if not isinstance(line, LineString):
+            logger.warning(f"Skipping non-LineString geometry: {type(line)}")
             continue
             
-        # Process each coastline segment
-        for _, segment in county_coastline.iterrows():
-            geom = segment.geometry
-            if not geom or geom.is_empty:
+        # Create points along shoreline
+        points = create_reference_points(line, POINT_SPACING_M)
+        
+        if not points:
+            continue
+            
+        # Convert points to GeoSeries for spatial join
+        points_gdf = gpd.GeoDataFrame(geometry=points, crs=region_proj)
+        
+        # Spatial join with counties
+        joined = gpd.sjoin(points_gdf, counties_projected, how='left', predicate='within')
+        
+        # Process each point
+        for j, point_row in joined.iterrows():
+            # Skip points not within any county
+            if pd.isna(point_row.get('index_right')):
                 continue
                 
-            # Handle both LineString and MultiLineString
-            lines = [geom] if isinstance(geom, LineString) else list(geom.geoms)
+            # Create reference point dictionary
+            reference_point = {
+                'geometry': point_row['geometry'],
+                'county_fips': point_row['county_fips'],
+                'county_name': point_row['county_name'],
+                'region': region_name,
+                'region_display': region_def.get('name', region_name)
+            }
             
-            for line in lines:
-                # Generate points for this segment
-                points = create_reference_points(line)
-                
-                # Add points with county and region metadata
-                for point in points:
-                    reference_points.append({
-                        'county_fips': county['GEOID'],
-                        'county_name': county['NAME'],
-                        'state_fips': county['STATEFP'],
-                        'region': region_name,
-                        'region_display': region_def.get('display_name', region_name.replace('_', ' ').title()),
-                        'geometry': point
-                    })
+            reference_points.append(reference_point)
     
+    logger.info(f"Created {len(reference_points)} reference points for {region_name}")
     return reference_points
 
 def generate_coastal_points(region_filter=None) -> gpd.GeoDataFrame:
@@ -160,89 +191,107 @@ def generate_coastal_points(region_filter=None) -> gpd.GeoDataFrame:
     Returns:
         GeoDataFrame containing reference points with county and region metadata
     """
-    # Load region configuration
-    regions_config = load_region_config()
-    
-    # Check if region filter is valid
-    if region_filter and region_filter not in regions_config:
-        available_regions = ", ".join(regions_config.keys())
-        raise ValueError(f"Invalid region: {region_filter}. Available regions: {available_regions}")
-    
-    # Load coastal counties
-    logger.info("Loading coastal counties...")
-    counties = gpd.read_parquet(COASTAL_COUNTIES_FILE)
-    
-    region_gdfs = []
-    
-    # Process each region from config, or just the filtered region
-    regions_to_process = [region_filter] if region_filter else regions_config.keys()
-    
-    for region_name in regions_to_process:
-        region_def = regions_config[region_name]
-        logger.info(f"\n{'='*80}")
-        logger.info(f"Processing region: {region_name}")
-        logger.info(f"{'='*80}")
+    try:
+        # Load region configuration
+        regions_config = load_region_config()
         
-        region_file = SHORELINE_DIR / f"{region_name}.parquet"
+        # Check if region filter is valid
+        if region_filter and region_filter not in regions_config:
+            available_regions = ", ".join(regions_config.keys())
+            raise ValueError(f"Invalid region: {region_filter}. Available regions: {available_regions}")
         
-        if not region_file.exists():
-            logger.warning(f"Shoreline file not found for {region_name}")
-            continue
-        
-        # Load regional shoreline
-        logger.info(f"Loading shoreline for {region_name}...")
-        shoreline = gpd.read_parquet(region_file)
-        
-        # Process this region
-        region_points = process_region(shoreline, counties, region_name, region_def)
-        region_gdf = pd.DataFrame(region_points)
-        
-        if len(region_gdf) == 0:
-            logger.warning(f"No points generated for {region_name}")
-            continue
+        # Load coastal counties
+        logger.info("Loading coastal counties...")
+        counties_file = COASTAL_COUNTIES_FILE
+        if not counties_file.exists():
+            raise FileNotFoundError(f"Coastal counties file not found: {counties_file}")
             
-        region_gdf = gpd.GeoDataFrame(region_gdf, geometry='geometry', crs="EPSG:4326")
+        counties = gpd.read_parquet(counties_file)
         
-        # Log region bounds
-        bounds = region_gdf.total_bounds
-        logger.info("\nRegion bounds (WGS84):")
+        region_gdfs = []
+        
+        # Process each region from config, or just the filtered region
+        regions_to_process = [region_filter] if region_filter else regions_config.keys()
+        
+        for region_name in regions_to_process:
+            region_def = regions_config[region_name]
+            logger.info(f"\n{'='*80}")
+            logger.info(f"Processing region: {region_name}")
+            logger.info(f"{'='*80}")
+            
+            region_file = SHORELINE_DIR / f"{region_name}.parquet"
+            
+            if not region_file.exists():
+                logger.warning(f"Shoreline file not found for {region_name}: {region_file}")
+                continue
+            
+            # Load regional shoreline
+            logger.info(f"Loading shoreline for {region_name}...")
+            try:
+                shoreline = gpd.read_parquet(region_file)
+            except Exception as e:
+                logger.error(f"Error loading shoreline for {region_name}: {str(e)}")
+                continue
+            
+            # Process this region
+            try:
+                region_points = process_region(shoreline, counties, region_name, region_def)
+                if not region_points:
+                    logger.warning(f"No points generated for {region_name}")
+                    continue
+                    
+                region_gdf = pd.DataFrame(region_points)
+                region_gdf = gpd.GeoDataFrame(region_gdf, geometry='geometry', crs="EPSG:4326")
+                
+                # Log region bounds
+                bounds = region_gdf.total_bounds
+                logger.info("\nRegion bounds (WGS84):")
+                logger.info(f"Longitude min/max: {bounds[0]:.2f}, {bounds[2]:.2f}")
+                logger.info(f"Latitude min/max: {bounds[1]:.2f}, {bounds[3]:.2f}")
+                
+                region_gdfs.append(region_gdf)
+                logger.info(f"Added {len(region_gdf)} points for {region_name}")
+            except Exception as e:
+                logger.error(f"Error processing region {region_name}: {str(e)}")
+                continue
+        
+        # Combine all regions (or just the filtered region if specified)
+        if not region_gdfs:
+            logger.error("No points generated for any region")
+            return gpd.GeoDataFrame()
+            
+        points_gdf = pd.concat(region_gdfs, ignore_index=True)
+        points_gdf = gpd.GeoDataFrame(points_gdf, crs="EPSG:4326")
+        
+        # Generate output filename based on region filter
+        output_file = REFERENCE_POINTS_FILE
+        if region_filter:
+            # Create region-specific output file
+            output_dir = Path(REFERENCE_POINTS_FILE).parent
+            output_name = f"reference_points_{region_filter}.parquet"
+            output_file = output_dir / output_name
+            
+        # Create output directory if it doesn't exist
+        os.makedirs(output_file.parent, exist_ok=True)
+        
+        logger.info(f"\nGenerated {len(points_gdf)} total reference points")
+        logger.info("\nPoints by region:")
+        logger.info(points_gdf['region_display'].value_counts())
+        
+        # Final verification of bounds
+        bounds = points_gdf.total_bounds
+        logger.info("\nFinal combined dataset bounds (WGS84):")
         logger.info(f"Longitude min/max: {bounds[0]:.2f}, {bounds[2]:.2f}")
         logger.info(f"Latitude min/max: {bounds[1]:.2f}, {bounds[3]:.2f}")
         
-        region_gdfs.append(region_gdf)
-        logger.info(f"Added {len(region_gdf)} points for {region_name}")
-    
-    # Combine all regions (or just the filtered region if specified)
-    if not region_gdfs:
-        logger.error("No points generated for any region")
-        return gpd.GeoDataFrame()
+        # Save to file
+        points_gdf.to_parquet(output_file, compression='snappy', index=False)
+        logger.info(f"\nSaved reference points to {output_file}")
         
-    points_gdf = pd.concat(region_gdfs, ignore_index=True)
-    points_gdf = gpd.GeoDataFrame(points_gdf, crs="EPSG:4326")
-    
-    # Generate output filename based on region filter
-    output_file = REFERENCE_POINTS_FILE
-    if region_filter:
-        # Create region-specific output file
-        output_dir = Path(REFERENCE_POINTS_FILE).parent
-        output_name = f"reference_points_{region_filter}.parquet"
-        output_file = output_dir / output_name
-    
-    logger.info(f"\nGenerated {len(points_gdf)} total reference points")
-    logger.info("\nPoints by region:")
-    logger.info(points_gdf['region_display'].value_counts())
-    
-    # Final verification of bounds
-    logger.info("\nFinal combined dataset bounds (WGS84):")
-    bounds = points_gdf.total_bounds
-    logger.info(f"Longitude min/max: {bounds[0]:.2f}, {bounds[2]:.2f}")
-    logger.info(f"Latitude min/max: {bounds[1]:.2f}, {bounds[3]:.2f}")
-    
-    # Save to file
-    points_gdf.to_parquet(output_file, compression='snappy', index=False)
-    logger.info(f"\nSaved reference points to {output_file}")
-    
-    return points_gdf
+        return points_gdf
+    except Exception as e:
+        logger.error(f"Error in generate_coastal_points: {str(e)}")
+        raise
 
 def parse_args():
     """Parse command line arguments."""
@@ -254,12 +303,6 @@ def main():
     """Generate coastal reference points."""
     # Parse command line arguments
     args = parse_args()
-    
-    # Configure logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
     
     try:
         # Generate points for all regions or filtered region
