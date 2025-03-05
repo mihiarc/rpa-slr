@@ -1,7 +1,7 @@
 """
 Generate evenly spaced reference points along the coastline for coastal counties.
 Points are spaced 5km apart using region-specific projections for accurate distances.
-Uses region definitions from region_mappings.yaml for proper regional processing.
+Uses county_region_mappings.yaml for county definitions and region_mappings.yaml for projections.
 """
 
 import geopandas as gpd
@@ -14,15 +14,8 @@ import argparse
 import pandas as pd
 import os
 import sys
-from src.config import (
-    CONFIG_DIR,
-    PROCESSED_DIR,
-    SHORELINE_DIR,
-    COASTAL_COUNTIES_FILE,
-    REFERENCE_POINTS_FILE
-)
 
-# Set up logging manually without dependencies
+# Set up logging manually
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -32,13 +25,32 @@ logger = logging.getLogger(__name__)
 # Point spacing in meters (5km)
 POINT_SPACING_M = 5000
 
+# Define paths directly to avoid import issues
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+CONFIG_DIR = PROJECT_ROOT / "config"
+DATA_DIR = PROJECT_ROOT / "data"
+PROCESSED_DIR = DATA_DIR / "processed"
+OUTPUT_DIR = PROJECT_ROOT / "output"
+COUNTY_SHORELINE_REF_POINTS_DIR = OUTPUT_DIR / "county_shoreline_ref_points"
+
+# Configuration files
+REGION_CONFIG_FILE = CONFIG_DIR / "region_mappings.yaml"
+COUNTY_REGION_CONFIG = CONFIG_DIR / "county_region_mappings.yaml"
+
+# Input/output paths
+CENSUS_COUNTY_SHAPEFILE = DATA_DIR / "input" / "shapefile_county_census" / "tl_2024_us_county.shp"
+SHORELINE_DIR = PROCESSED_DIR / "regional_shorelines"
+COASTAL_COUNTIES_FILE = PROCESSED_DIR / "coastal_counties.parquet"
+REFERENCE_POINTS_FILE = COUNTY_SHORELINE_REF_POINTS_DIR / "coastal_reference_points.parquet"
+
 # Make sure directories exist
 os.makedirs(PROCESSED_DIR, exist_ok=True)
 os.makedirs(REFERENCE_POINTS_FILE.parent, exist_ok=True)
 
 def load_region_config():
     """Load region configuration from YAML."""
-    with open(CONFIG_DIR / "region_mappings.yaml") as f:
+    logger.info(f"Loading region configuration from {REGION_CONFIG_FILE}")
+    with open(REGION_CONFIG_FILE) as f:
         config = yaml.safe_load(f)
     return config.get('regions', {})
 
@@ -72,6 +84,132 @@ def get_region_projection(region_name: str, region_def: dict) -> str:
         epsg = f"EPSG:{32700 + utm_zone}"
     
     return epsg
+
+def load_county_mappings():
+    """Load county-to-region mappings from YAML configuration."""
+    logger.info(f"Loading county mappings from {COUNTY_REGION_CONFIG}")
+    
+    with open(COUNTY_REGION_CONFIG) as f:
+        config = yaml.safe_load(f)
+    
+    return config.get("regions", {})
+
+def load_census_counties():
+    """Load county geometries from Census shapefile."""
+    logger.info(f"Loading county geometries from {CENSUS_COUNTY_SHAPEFILE}")
+    
+    if not Path(CENSUS_COUNTY_SHAPEFILE).exists():
+        raise FileNotFoundError(f"Census county file not found: {CENSUS_COUNTY_SHAPEFILE}")
+    
+    counties = gpd.read_file(CENSUS_COUNTY_SHAPEFILE)
+    logger.info(f"Loaded {len(counties)} counties from Census data")
+    
+    return counties
+
+def generate_coastal_counties(region_filter=None):
+    """Generate coastal counties from predefined list.
+    
+    Args:
+        region_filter: Optional region name to filter processing
+    
+    Returns:
+        GeoDataFrame of coastal counties
+    """
+    try:
+        # Load county-to-region mappings
+        region_config = load_county_mappings()
+        
+        # Check if region filter is valid
+        if region_filter and region_filter not in region_config:
+            available_regions = ", ".join(region_config.keys())
+            raise ValueError(f"Invalid region: {region_filter}. Available regions: {available_regions}")
+        
+        # Filter regions if specified
+        if region_filter:
+            regions_to_process = {region_filter: region_config[region_filter]}
+        else:
+            regions_to_process = region_config
+        
+        # Load Census county geometries
+        counties_gdf = load_census_counties()
+        
+        # Process each region and collect counties
+        all_coastal_counties = []
+        
+        for region_name, region_def in regions_to_process.items():
+            logger.info(f"Processing region: {region_name}")
+            
+            region_counties = region_def.get("counties", [])
+            if not region_counties:
+                logger.warning(f"No counties defined for region: {region_name}")
+                continue
+            
+            # Extract FIPS codes for this region
+            county_fips_list = [county.get("fips") for county in region_counties]
+            county_names = {county.get("fips"): county.get("name") for county in region_counties}
+            
+            logger.info(f"Found {len(county_fips_list)} counties in region definition")
+            
+            # Convert county FIPS to match Census GEOID format if needed
+            formatted_fips = []
+            for fips in county_fips_list:
+                if fips and len(fips) == 5:  # Already in correct format
+                    formatted_fips.append(fips)
+                else:
+                    logger.warning(f"Invalid FIPS code format: {fips}")
+            
+            # Filter counties by FIPS
+            region_counties_gdf = counties_gdf[counties_gdf["GEOID"].isin(formatted_fips)].copy()
+            
+            if len(region_counties_gdf) == 0:
+                logger.warning(f"No counties found in Census data for region: {region_name}")
+                continue
+            
+            logger.info(f"Found {len(region_counties_gdf)} matching counties in Census data")
+            
+            # Add region information
+            region_counties_gdf["region"] = region_name
+            region_counties_gdf["region_display"] = region_def.get("name", region_name)
+            
+            # Add county names from our mapping
+            region_counties_gdf["county_name"] = region_counties_gdf["GEOID"].map(county_names)
+            region_counties_gdf["county_fips"] = region_counties_gdf["GEOID"]
+            
+            # Add to collection
+            all_coastal_counties.append(region_counties_gdf)
+        
+        if not all_coastal_counties:
+            logger.error("No coastal counties found for any region")
+            return gpd.GeoDataFrame()
+        
+        # Combine all regions
+        coastal_counties = pd.concat(all_coastal_counties, ignore_index=True)
+        coastal_counties_gdf = gpd.GeoDataFrame(coastal_counties, geometry="geometry")
+        
+        # Remove any duplicates
+        coastal_counties_gdf = coastal_counties_gdf.drop_duplicates(subset=["GEOID"])
+        
+        logger.info(f"Total unique coastal counties: {len(coastal_counties_gdf)}")
+        
+        # Generate output filename
+        output_file = COASTAL_COUNTIES_FILE
+        if region_filter:
+            output_dir = COASTAL_COUNTIES_FILE.parent
+            output_name = f"coastal_counties_{region_filter}.parquet"
+            output_file = output_dir / output_name
+        
+        # Create output directory if it doesn't exist
+        os.makedirs(output_file.parent, exist_ok=True)
+        
+        # Save to file
+        coastal_counties_gdf.to_parquet(output_file, compression="snappy", index=False)
+        logger.info(f"Saved coastal counties to {output_file}")
+        
+        return coastal_counties_gdf
+    
+    except Exception as e:
+        logger.error(f"Error generating coastal counties: {str(e)}")
+        raise
 
 def create_reference_points(line: LineString, spacing: float = POINT_SPACING_M) -> List[Point]:
     """Create evenly spaced points along a linestring.
@@ -199,7 +337,7 @@ def generate_coastal_points(region_filter=None) -> gpd.GeoDataFrame:
             available_regions = ", ".join(regions_config.keys())
             raise ValueError(f"Invalid region: {region_filter}. Available regions: {available_regions}")
         
-        # Load coastal counties from predefined list
+        # Load coastal counties from file or generate them
         logger.info("Loading coastal counties...")
         
         # First check if there's a region-specific coastal counties file
@@ -209,24 +347,18 @@ def generate_coastal_points(region_filter=None) -> gpd.GeoDataFrame:
                 logger.info(f"Found region-specific coastal counties file: {region_counties_file}")
                 counties = gpd.read_parquet(region_counties_file)
             else:
-                # Try to use the main coastal counties file
+                # Try to use the main coastal counties file or generate new ones
                 if not COASTAL_COUNTIES_FILE.exists():
-                    logger.warning(f"Coastal counties file not found: {COASTAL_COUNTIES_FILE}")
                     logger.info("Generating coastal counties from predefined list...")
-                    # Import and run the predefined coastal counties script
-                    from src.preprocessing.predefined_coastal_counties import generate_coastal_counties
                     counties = generate_coastal_counties(region_filter=region_filter)
                 else:
                     # Load the main file and filter by region
                     counties = gpd.read_parquet(COASTAL_COUNTIES_FILE)
                     counties = counties[counties['region'] == region_filter]
         else:
-            # No region filter, use the main coastal counties file
+            # No region filter, use the main coastal counties file or generate new ones
             if not COASTAL_COUNTIES_FILE.exists():
-                logger.warning(f"Coastal counties file not found: {COASTAL_COUNTIES_FILE}")
                 logger.info("Generating coastal counties from predefined list...")
-                # Import and run the predefined coastal counties script
-                from src.preprocessing.predefined_coastal_counties import generate_coastal_counties
                 counties = generate_coastal_counties()
             else:
                 counties = gpd.read_parquet(COASTAL_COUNTIES_FILE)
