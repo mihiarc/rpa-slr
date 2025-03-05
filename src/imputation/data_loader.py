@@ -102,17 +102,35 @@ class GaugeStationLoader:
 class ReferencePointLoader:
     """Loads and validates coastal reference points."""
     
-    def __init__(self, points_file: Path = REFERENCE_POINTS_FILE):
+    def __init__(self, points_file: Path = REFERENCE_POINTS_FILE, region: str = None):
         self.points_file = points_file
+        self.region = region
         self.state_fips_to_code = get_state_fips_to_code_mapping()
     
     def load(self) -> gpd.GeoDataFrame:
         """
         Load reference points from parquet file.
         
+        If a region is specified, it tries to load region-specific points file.
+        
         Returns:
             GeoDataFrame containing reference points
         """
+        # If region is specified, try to load region-specific file
+        if self.region:
+            region_points_file = Path(str(self.points_file).replace(
+                "coastal_reference_points.parquet", 
+                f"reference_points_{self.region}.parquet"
+            ))
+            
+            # Check if region-specific file exists
+            if region_points_file.exists():
+                logger.info(f"Using region-specific points file for {self.region}: {region_points_file}")
+                self.points_file = region_points_file
+            else:
+                logger.warning(f"Region-specific points file not found for {self.region}: {region_points_file}")
+                logger.warning(f"Using default points file: {self.points_file}")
+        
         try:
             points_gdf = gpd.read_parquet(self.points_file)
             logger.info(f"Loaded {len(points_gdf)} reference points")
@@ -143,9 +161,10 @@ class ReferencePointLoader:
 class DataLoader:
     """Main data loading interface."""
     
-    def __init__(self):
+    def __init__(self, region: str = None):
         self.gauge_loader = GaugeStationLoader()
-        self.points_loader = ReferencePointLoader()
+        self.points_loader = ReferencePointLoader(region=region)
+        self.region = region
     
     def load_gauge_stations(self) -> gpd.GeoDataFrame:
         """Load all gauge stations."""

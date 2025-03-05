@@ -139,20 +139,39 @@ def process_region(region: str,
         return None
 
 class ImputationManager:
-    """Manages the imputation of water levels at reference points."""
+    """
+    Manages the imputation process across all regions.
     
-    def __init__(self,
+    Orchestrates the process of:
+    1. Loading reference points and gauge stations
+    2. Processing each region to create imputation structure
+    3. Saving output to parquet files
+    """
+    
+    def __init__(self, 
                  reference_points_file: Path = REFERENCE_POINTS_FILE,
-                 gauge_stations_file: Path = TIDE_STATIONS_DIR,
-                 output_dir: Path = OUTPUT_DIR / "imputation",
+                 gauge_stations_file: Path = None, 
+                 output_dir: Path = IMPUTATION_DIR / "data",
                  region_config: Path = REGION_CONFIG,
-                 n_processes: int = None):
-        """Initialize imputation manager."""
+                 n_processes: int = None,
+                 region: str = None):
+        """
+        Initialize imputation manager.
+        
+        Args:
+            reference_points_file: Path to reference points parquet file
+            gauge_stations_file: Path to gauge stations file (optional)
+            output_dir: Directory to save output files
+            region_config: Path to region configuration file
+            n_processes: Number of processes to use for parallel processing
+            region: Specific region to process (if None, process all regions)
+        """
         self.reference_points_file = reference_points_file
         self.gauge_stations_file = gauge_stations_file
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.n_processes = n_processes or max(1, mp.cpu_count() - 2)
+        self.region = region
         
         # Load region configuration
         with open(region_config) as f:
@@ -161,11 +180,17 @@ class ImputationManager:
             self.metadata = config.get('metadata', {})
             
         # Initialize data loader
-        self.data_loader = DataLoader()
+        self.data_loader = DataLoader(region=region)
         
         self._setup_logging()
         
-        logger.info(f"Initialized ImputationManager with {len(self.region_config)} regions")
+        if region:
+            logger.info(f"Initialized ImputationManager for region: {region}")
+            if region not in self.region_config:
+                logger.warning(f"Region '{region}' not found in configuration. Available regions: {', '.join(self.region_config.keys())}")
+        else:
+            logger.info(f"Initialized ImputationManager with {len(self.region_config)} regions")
+            
         logger.info(f"Using {self.n_processes} processes for regional processing")
         logger.info(f"Data source: {self.metadata.get('source', 'Unknown')}")
         logger.info(f"Last updated: {self.metadata.get('last_updated', 'Unknown')}")
@@ -220,7 +245,10 @@ class ImputationManager:
 
     def run(self) -> Dict[str, Path]:
         """
-        Run imputation structure preparation for all regions in parallel.
+        Run imputation structure preparation for all regions or a single region.
+        
+        If a region was specified during initialization, only that region is processed.
+        Otherwise, all regions are processed in parallel.
         
         Returns:
             Dictionary mapping region names to output file paths
@@ -235,7 +263,32 @@ class ImputationManager:
             logger.error("Failed to load required data")
             return output_files
         
-        # Process regions in parallel
+        # Process only a specific region if requested
+        if self.region:
+            if self.region not in self.region_config:
+                logger.error(f"Region '{self.region}' not found in configuration")
+                return output_files
+                
+            logger.info(f"Processing single region: {self.region}")
+            try:
+                df = process_region(
+                    self.region, 
+                    self.region_config[self.region],
+                    reference_points,
+                    gauge_stations
+                )
+                
+                if df is not None:
+                    output_path = self.save_imputation_structure(df, self.region)
+                    if output_path:
+                        output_files[self.region] = output_path
+            except Exception as e:
+                logger.error(f"Error processing region {self.region}: {str(e)}")
+                
+            return output_files
+        
+        # Process all regions in parallel if no specific region requested
+        logger.info("Processing all regions in parallel")
         with ProcessPoolExecutor(max_workers=self.n_processes) as executor:
             # Submit all regions
             future_to_region = {
