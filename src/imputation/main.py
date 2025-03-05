@@ -11,6 +11,9 @@ The imputation output is designed to support:
 - Projection of future water levels to coastal county reference points
 - Temporal interpolation between gauge readings
 - Handling of missing or incomplete gauge data
+
+This module can be run directly for a specific region:
+  `python -m src.imputation.main --region west_coast`
 """
 
 import geopandas as gpd
@@ -24,6 +27,10 @@ import yaml
 import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm import tqdm
+import argparse
+import sys
+import os
+import traceback
 
 from src.config import (
     CONFIG_DIR,
@@ -255,70 +262,120 @@ class ImputationManager:
         """
         output_files = {}
         
-        # Load data once for all regions
-        reference_points = self.data_loader.load_reference_points()
-        gauge_stations = self.data_loader.load_gauge_stations()
-        
-        if reference_points.empty or gauge_stations.empty:
-            logger.error("Failed to load required data")
-            return output_files
-        
-        # Process only a specific region if requested
-        if self.region:
-            if self.region not in self.region_config:
-                logger.error(f"Region '{self.region}' not found in configuration")
+        try:
+            # Load data once for all regions
+            reference_points = self.data_loader.load_reference_points()
+            gauge_stations = self.data_loader.load_gauge_stations()
+            
+            if reference_points is None or reference_points.empty:
+                logger.error("Failed to load reference points")
                 return output_files
                 
-            logger.info(f"Processing single region: {self.region}")
-            try:
-                df = process_region(
-                    self.region, 
-                    self.region_config[self.region],
-                    reference_points,
-                    gauge_stations
-                )
-                
-                if df is not None:
-                    output_path = self.save_imputation_structure(df, self.region)
-                    if output_path:
-                        output_files[self.region] = output_path
-            except Exception as e:
-                logger.error(f"Error processing region {self.region}: {str(e)}")
-                
-            return output_files
-        
-        # Process all regions in parallel if no specific region requested
-        logger.info("Processing all regions in parallel")
-        with ProcessPoolExecutor(max_workers=self.n_processes) as executor:
-            # Submit all regions
-            future_to_region = {
-                executor.submit(
-                    process_region,
-                    region,
-                    self.region_config[region],
-                    reference_points,
-                    gauge_stations
-                ): region 
-                for region in self.region_config
-            }
+            if gauge_stations is None or gauge_stations.empty:
+                logger.error("Failed to load gauge stations")
+                return output_files
             
-            # Process results as they complete
-            for future in tqdm(as_completed(future_to_region), 
-                             total=len(self.region_config),
-                             desc="Processing regions"):
-                region = future_to_region[future]
+            # Process only a specific region if requested
+            if self.region:
+                if self.region not in self.region_config:
+                    logger.error(f"Region '{self.region}' not found in configuration")
+                    return output_files
+                    
+                logger.info(f"Processing single region: {self.region}")
                 try:
-                    df = future.result()
+                    df = process_region(
+                        self.region, 
+                        self.region_config[self.region],
+                        reference_points,
+                        gauge_stations
+                    )
+                    
                     if df is not None:
-                        output_path = self.save_imputation_structure(df, region)
+                        output_path = self.save_imputation_structure(df, self.region)
                         if output_path:
-                            output_files[region] = output_path
+                            output_files[self.region] = output_path
                 except Exception as e:
-                    logger.error(f"Error processing region {region}: {str(e)}")
-        
-        return output_files
+                    logger.error(f"Error processing region {self.region}: {str(e)}")
+                    logger.error(traceback.format_exc())
+                    
+                return output_files
+            
+            # Process all regions in parallel if no specific region requested
+            logger.info("Processing all regions in parallel")
+            with ProcessPoolExecutor(max_workers=self.n_processes) as executor:
+                # Submit all regions
+                future_to_region = {
+                    executor.submit(
+                        process_region,
+                        region,
+                        self.region_config[region],
+                        reference_points,
+                        gauge_stations
+                    ): region 
+                    for region in self.region_config
+                }
+                
+                # Process results as they complete
+                for future in tqdm(as_completed(future_to_region), 
+                                 total=len(self.region_config),
+                                 desc="Processing regions"):
+                    region = future_to_region[future]
+                    try:
+                        df = future.result()
+                        if df is not None:
+                            output_path = self.save_imputation_structure(df, region)
+                            if output_path:
+                                output_files[region] = output_path
+                    except Exception as e:
+                        logger.error(f"Error processing region {region}: {str(e)}")
+            
+            return output_files
+            
+        except Exception as e:
+            logger.error(f"Error in imputation process: {str(e)}")
+            logger.error(traceback.format_exc())
+            return output_files
 
 if __name__ == "__main__":
-    # Run imputation process
-    manager = ImputationManager()
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="Run imputation process for a specific region")
+    parser.add_argument(
+        "--region", 
+        type=str,
+        required=True,
+        help="Region to process (e.g., west_coast, north_atlantic)"
+    )
+    parser.add_argument(
+        "--output-dir", 
+        type=str, 
+        default=None,
+        help="Directory to save output files (defaults to config settings)"
+    )
+    
+    args = parser.parse_args()
+    
+    if args.output_dir:
+        output_dir = Path(args.output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        output_dir = IMPUTATION_DIR / "data"
+        output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Initialize and run imputation manager for the specified region
+    manager = ImputationManager(
+        output_dir=output_dir,
+        region=args.region
+    )
+    
+    # Run the imputation process
     output_files = manager.run()
+    
+    # Print results
+    if output_files:
+        print(f"\nSuccessfully generated imputation structures for {args.region}:")
+        for region, path in output_files.items():
+            print(f"  - {region}: {path}")
+        sys.exit(0)
+    else:
+        print(f"\nFailed to generate imputation structure for {args.region}")
+        sys.exit(1)
