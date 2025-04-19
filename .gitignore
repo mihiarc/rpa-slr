@@ -56,3 +56,22 @@ data/
 *.cpg
 *.log
 src/noaa/cache/
+
+# Climate module specific
+climate/config/*.yml
+climate/config/*.yaml
+!climate/config/example.yml
+climate/src/**/credentials/
+climate/src/**/*.json
+climate/.coverage
+climate/output/**/*
+climate/data/**/*
+climate/**/*.cache
+climate/tests/.pytest_cache/
+climate/.pytest_cache/
+climate/src/noaa/cache/
+
+# Keep these files
+!climate/config/example.yml
+!climate/requirements*.txt
+!climate/README.md

@@ -1,0 +1,22 @@
+# Core scientific packages
+xarray>=2022.3.0
+numpy>=1.22.4
+pandas>=1.5.3
+
+# Climate analysis
+xclim>=0.40.0
+rioxarray>=0.13.3
+
+# Testing
+pytest>=8.0.0
+pytest-cov>=4.1.0
+
+# Earth Engine and Geemap
+earthengine-api>=0.1.329
+geemap>=0.20.6
+pyyaml>=6.0
+matplotlib>=3.7.0
+ipykernel>=6.19.4
+geopandas>=0.12.2
+netCDF4>=1.6.2
+dask>=2023.3.0 
