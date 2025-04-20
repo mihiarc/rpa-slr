@@ -11,9 +11,8 @@ rioxarray>=0.13.3
 pytest>=8.0.0
 pytest-cov>=4.1.0
 
-# Earth Engine and Geemap
+# Earth Engine
 earthengine-api>=0.1.329
-geemap>=0.20.6
 pyyaml>=6.0
 matplotlib>=3.7.0
 ipykernel>=6.19.4

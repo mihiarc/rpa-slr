@@ -3,7 +3,6 @@ import sys
 import pandas as pd
 import numpy as np
 import xarray as xr
-import geemap
 import ee
 import logging
 from datetime import datetime
@@ -60,7 +59,7 @@ def download_climate_data(model, scenario, variable, start_year, end_year, outpu
     # Create a region of interest (continental US bounding box)
     roi = ee.Geometry.Rectangle([-125, 24, -66, 50])
     
-    # Use geemap to download the data as a NetCDF file
+    # Using Earth Engine's native export functionality instead of geemap
     logger.info(f"Downloading {variable} data for {model} {scenario} from {start_year} to {end_year}...")
     
     # For larger regions and time periods, we need to export to Google Drive first
