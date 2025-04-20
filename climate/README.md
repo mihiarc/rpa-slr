@@ -12,20 +12,14 @@ This project processes climate projection data from Google Earth Engine to gener
 
 ### Installation
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/yourusername/county-level-tidal-flooding.git
-   cd county-level-tidal-flooding
-   ```
-
-2. Create a virtual environment using `uv`:
+1. Create a virtual environment using `uv`:
    ```bash
    pip install uv
    uv venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
    ```
 
-3. Install dependencies:
+2. Install dependencies:
    ```bash
    uv pip install -r requirements.txt
    ```
@@ -149,39 +143,3 @@ This project calculates various climate indicators at the county level:
 - [NASA GDDP-CMIP6 Dataset](https://developers.google.com/earth-engine/datasets/catalog/NASA_GDDP-CMIP6)
 - [xclim GitHub Repository](https://github.com/Ouranosinc/xclim)
 - [TIGER/2018/Counties](https://developers.google.com/earth-engine/datasets/catalog/TIGER_2018_Counties)
-
-## Testing
-
-This project includes comprehensive unit tests and integration tests for the pipeline orchestrator.
-
-### Running Tests
-
-To run the tests, use the included test script:
-
-```bash
-# Run all tests with coverage report
-./run_tests.sh
-
-# Run only unit tests
-./run_tests.sh unit
-
-# Run only integration tests
-./run_tests.sh integration
-```
-
-### Test Structure
-
-- **Unit Tests**: Tests for individual components and functions in isolation
-- **Integration Tests**: Tests for the interaction between components and end-to-end functionality
-
-The tests use pytest with fixtures to mock external dependencies like Google Earth Engine, allowing tests to run without requiring actual API access.
-
-### Test Coverage
-
-The tests aim to cover:
-
-- Pipeline initialization and configuration
-- Earth Engine authentication
-- Data download and processing
-- Error handling and edge cases
-- Command-line interface functionality 
