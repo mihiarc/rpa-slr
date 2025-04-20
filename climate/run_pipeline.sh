@@ -41,9 +41,9 @@ if [ ! -d "config" ]; then
 fi
 
 # Check if config file exists, create template if not
-if [ ! -f "config/config.yml" ]; then
+if [ ! -f "config.yml" ]; then
     echo "Creating template config file..."
-    cat > config/config.yml << EOF
+    cat > config.yml << EOF
 earth_engine:
   project_id: your-gee-project-id
   model: ACCESS-CM2
@@ -69,7 +69,7 @@ processing:
   chunk_size: 10000
   max_concurrent_tasks: 3000
 EOF
-    echo "WARNING: Please edit config/config.yml with your specific settings before running the pipeline."
+    echo "WARNING: Please edit config.yml with your specific settings before running the pipeline."
     exit 1
 fi
 
