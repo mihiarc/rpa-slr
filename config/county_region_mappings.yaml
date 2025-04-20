@@ -1,6 +1,5 @@
 metadata:
   source: "NOAA Tides and Currents - County Level Tidal Flooding Project"
-  last_updated: '2024-06-08'
   description: "County to region mappings for high tide flooding data processing"
 
 # Counties grouped by region based on state codes from region_mappings.yaml

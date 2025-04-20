@@ -1,8 +1,6 @@
 metadata:
   source: NOAA Tides and Currents
-  last_updated: '2024-03-01'
   description: List of NOAA tide gauge stations in the Gulf Coast region
-  coordinate_system: WGS84 (EPSG:4326)
   region: gulf_coast
 stations:
   # Florida (Gulf Coast)

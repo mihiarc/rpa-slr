@@ -1,8 +1,5 @@
-# FIPS Code Mappings and Region Definitions
-
 metadata:
   source: NOAA Tides and Currents
-  last_updated: '2024-03-01'
   description: Regional mappings for NOAA tide gauge stations
 
 # Region definitions with state FIPS codes and map bounds
