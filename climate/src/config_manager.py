@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Constants
-DEFAULT_CONFIG_PATH = 'config/config.yml'
+DEFAULT_CONFIG_PATH = 'config.yml'
 
 def load_config(config_path: str = DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
     """
