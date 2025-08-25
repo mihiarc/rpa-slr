@@ -32,7 +32,7 @@ env/
 *.swo
 
 # OS
-*.DS_Store*
+.DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
@@ -76,5 +76,3 @@ climate/src/noaa/cache/
 !climate/config/example.yml
 !climate/requirements*.txt
 !climate/README.md
-.DS_Store
-output/.DS_Store
