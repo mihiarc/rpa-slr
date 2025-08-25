@@ -70,6 +70,39 @@ POINT_SPACING = 5000  # 5km spacing between coastal reference points
 HISTORICAL_SETTINGS = NOAA_SETTINGS['data']['historical']
 PROJECTED_SETTINGS = NOAA_SETTINGS['data']['projected']
 
+# NOAA data paths  
+NOAA_DIR = OUTPUT_DIR / "noaa"
+NOAA_HISTORICAL_DIR = NOAA_DIR / "historical"
+NOAA_PROJECTED_DIR = NOAA_DIR / "projected"
+
+# Assignment settings
+ASSIGNMENT_SETTINGS = {
+    'historical': {
+        'start_year': 1970,
+        'end_year': 2024,
+    },
+    'projected': {
+        'start_decade': 2020,
+        'end_decade': 2100,
+    },
+    'common': {
+        'require_same_region': True,
+        'require_same_subregion': {
+            'default': False,
+            'gulf_coast': False,
+            'west_coast': False,
+            'north_atlantic': False,
+            'mid_atlantic': False,
+            'south_atlantic': False,
+            'alaska': False,
+            'hawaii': False,
+            'pacific_islands': False,
+            'puerto_rico': False,
+            'virgin_islands': False
+        }
+    }
+}
+
 # Ensure directories exist
 def ensure_directories():
     """Create all necessary directories if they don't exist."""
@@ -91,7 +124,10 @@ def ensure_directories():
         IMPUTATION_DATA_DIR,
         IMPUTATION_LOGS_DIR,
         IMPUTATION_MAPS_DIR,
-        SHORELINE_DIR
+        SHORELINE_DIR,
+        NOAA_DIR,
+        NOAA_HISTORICAL_DIR,
+        NOAA_PROJECTED_DIR
     ]
     for directory in directories:
         directory.mkdir(parents=True, exist_ok=True)
