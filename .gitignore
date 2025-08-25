@@ -76,3 +76,5 @@ climate/src/noaa/cache/
 !climate/config/example.yml
 !climate/requirements*.txt
 !climate/README.md
+.DS_Store
+output/.DS_Store
