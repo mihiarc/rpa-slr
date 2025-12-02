@@ -18,7 +18,7 @@ A Python package for retrieving and processing NOAA high tide flooding (HTF) dat
   - Process projections by region and scenario
     - regions define in `config/region_mappings.yaml`
     - each region has its own tide stations defined in `config/{region}_tide_stations.yaml`
-    - scenarios define in `config/scenario_mappings.yaml`
+    - scenarios: low, intLow, intermediate, intHigh, high (defined in NOAA API response)
   - Imputation module matches tide stations to reference points along the coast of each county
   - Assignment module assigns projected flood days to each county based on imputation module results
   - Outputs projected flood days by county in CSV
@@ -93,7 +93,7 @@ Supported Regions:
 Process historical HTF data for a specific region:
 
 ```bash
-python -m noaa.historical.historical_htf_cli \
+python -m src.noaa.historical.historical_htf_cli \
     --region gulf_coast \
     --start-year 1920 \
     --end-year 2024 \
@@ -106,7 +106,7 @@ python -m noaa.historical.historical_htf_cli \
 Process projected HTF data for a specific region:
 
 ```bash
-python -m noaa.projected.projected_htf_cli \
+python -m src.noaa.projected.projected_htf_cli \
     --region hawaii \
     --start-decade 2020 \
     --end-decade 2100 \
@@ -256,9 +256,12 @@ The package includes visualization tools for analyzing tide gauge coverage acros
   - North Atlantic (`imputation_map_north_atlantic.py`)
   - South Atlantic (`imputation_map_south_atlantic.py`)
   - Gulf Coast (`imputation_map_gulf_coast.py`)
+  - West Coast (`imputation_map_west_coast.py`)
   - Puerto Rico (`imputation_map_puerto_rico.py`)
   - Virgin Islands (`imputation_map_virgin_islands.py`)
   - Hawaii (`imputation_map_hawaii.py`)
+
+  Note: Alaska and Pacific Islands have verification scripts (`imputation_verify_*.py`) but not full map visualizations.
 
 Each visualization includes:
 - Choropleth maps showing coverage scores

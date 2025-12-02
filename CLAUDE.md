@@ -22,7 +22,7 @@ uv pip install -e .[dev]
 
 ### Testing
 ```bash
-# Run tests using pytest (configured in rpa_slr_20241226/pytest.ini)
+# Run tests using pytest
 uv run pytest tests/
 
 # Run tests with coverage
@@ -144,8 +144,8 @@ Each region has its own tide station configuration file in `config/tide_stations
 
 - Tests located in `tests/` directory
 - Focused on NOAA API components and core functionality
-- Pytest configuration in `rpa_slr_20241226/pytest.ini`
-- Coverage reporting enabled by default
+- Run with `uv run pytest tests/`
+- Coverage reporting available via `--cov` flag
 
 ### Dependencies
 
