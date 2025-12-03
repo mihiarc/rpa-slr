@@ -212,6 +212,7 @@ county_level_tidal_flooding/
    - Data structure: Annual counts of minor flooding events
    - Time range: 1920-2024
    - Source: NOAA Annual Flood Count Product (minor flooding only)
+   - **Alaska Exception**: NOAA does not provide HTF data for Alaska stations. Alaska flood days are computed from raw water level observations using 99th percentile thresholds. See [Alaska HTF Methodology](docs/alaska_htf_methodology.md) for details.
 2. Generating county-level historical estimates
    - Output: Annual minor flooding frequency by county
 
@@ -229,12 +230,27 @@ The separation into historical and projected analyses is necessary due to:
 - Different data structures and temporal resolutions
 - Distinct quality control requirements
 
+### Preprocessing: Coastal Reference Points
+
+Before running imputation, coastal reference points must be generated from shoreline data. The system uses two shoreline datasets:
+
+1. **NOS80K** (NOAA Medium Resolution Shoreline) - for continental US
+2. **GSHHG** (Global Self-consistent, Hierarchical, High-resolution Geography) - for non-CONUS regions (Alaska, Hawaii, Puerto Rico, Virgin Islands, Pacific Islands)
+
+Reference points are generated at 5km intervals along the shoreline within each county boundary and stored in:
+```
+output/county_shoreline_ref_points/coastal_reference_points.parquet
+```
+
+See [Shoreline Data Documentation](docs/shoreline_data.md) for details on data sources and regeneration.
+
 ### Imputation Pipeline
 
 1. Create station to county mapping
-   - Generate reference points along the coast of each county
-   - Match stations to the nearest reference point with weights based on distance
-   - Output: station to county mapping
+   - Load reference points along the coast of each county
+   - Match stations to the nearest reference points using KD-tree spatial search
+   - Calculate inverse distance weights (IDW) with 100km max distance, power=2
+   - Output: station to county mapping (parquet files per region)
 
 ### Assignment Pipeline
 

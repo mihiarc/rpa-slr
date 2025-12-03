@@ -4,7 +4,7 @@ Script to run the simplified HTF assignment process.
 
 from pathlib import Path
 import logging
-from assignment.assignment import process_htf_assignment
+from src.assignment.assignment import process_htf_assignment
 
 # Configure logging
 logging.basicConfig(

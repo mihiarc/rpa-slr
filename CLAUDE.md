@@ -119,9 +119,21 @@ uv run mypy src/
 ### Data Flow
 
 1. **Fetch**: Download HTF data from NOAA API by region and time period
-2. **Impute**: Create spatial relationships between tide stations and coastal counties
-3. **Assign**: Aggregate station data to county level using weighted assignments
-4. **Analyze**: Generate quality reports and visualizations
+2. **Preprocess**: Generate coastal reference points from shoreline data (see below)
+3. **Impute**: Create spatial relationships between tide stations and coastal counties
+4. **Assign**: Aggregate station data to county level using weighted assignments
+5. **Analyze**: Generate quality reports and visualizations
+
+### Shoreline Data Sources
+
+The imputation system requires coastal reference points generated from shoreline data:
+
+- **CONUS**: NOS80K (NOAA Medium Resolution Shoreline) at `data/input/shapefile_shoreline_noaa/`
+- **Non-CONUS**: GSHHG (Global Shoreline Database) at `data/input/gshhg/GSHHS_shp/h/`
+- **County Boundaries**: Census TIGER/Line 2024 at `data/input/shapefile_county_census/`
+- **Reference Points Output**: `output/county_shoreline_ref_points/coastal_reference_points.parquet`
+
+See `docs/shoreline_data.md` for full documentation on data sources and regeneration.
 
 ### Regional Structure
 
