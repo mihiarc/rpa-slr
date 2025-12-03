@@ -46,8 +46,10 @@ class NOAACache:
         
         # Load or initialize cache stats
         self.stats_file = self.cache_dir / "cache_stats.json"
+        self._stats_write_interval = 100  # Write stats every N operations
+        self._stats_pending_writes = 0
         self._load_cache_stats()
-        
+
         # Perform initial cleanup
         self._cleanup_old_cache()
         
@@ -84,12 +86,32 @@ class NOAACache:
             
     def _update_stats(self, stat_type: str):
         """Update cache statistics.
-        
+
+        Stats are batched and written to disk periodically to reduce I/O.
+
         Args:
             stat_type: Type of stat to update ('hits', 'misses', or 'errors')
         """
         self.stats[stat_type] += 1
-        self._save_cache_stats()
+        self._stats_pending_writes += 1
+
+        # Only write to disk periodically to reduce I/O
+        if self._stats_pending_writes >= self._stats_write_interval:
+            self._save_cache_stats()
+            self._stats_pending_writes = 0
+
+    def flush_stats(self):
+        """Force write of pending cache statistics to disk."""
+        if self._stats_pending_writes > 0:
+            self._save_cache_stats()
+            self._stats_pending_writes = 0
+
+    def __del__(self):
+        """Ensure stats are saved when cache manager is destroyed."""
+        try:
+            self.flush_stats()
+        except Exception:
+            pass  # Ignore errors during cleanup
         
     def _load_stations(self) -> List[Dict]:
         """Load stations with flexible format support."""

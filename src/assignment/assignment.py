@@ -7,6 +7,11 @@ Notes on HTF Data:
 - Zero flood days are valid measurements indicating no flooding occurred
 - Flood days have generally increased in recent years due to sea level rise
 - Early years often have legitimate zero flood days, not missing data
+
+IMPORTANT - Flood Severity:
+    The 'flood_days' column in all outputs represents MINOR flood days only.
+    Major and moderate flood events from the NOAA API are intentionally excluded.
+    See src/noaa/historical/historical_htf_processor.py for rationale.
 """
 
 import pandas as pd
@@ -18,6 +23,8 @@ import gc
 import psutil
 from tqdm import tqdm
 
+from src.config import ASSIGNMENT_SETTINGS
+
 logger = logging.getLogger(__name__)
 
 def log_memory_usage():
@@ -26,17 +33,19 @@ def log_memory_usage():
     memory_gb = process.memory_info().rss / 1024 / 1024 / 1024
     logger.info(f"Current memory usage: {memory_gb:.2f} GB")
 
-def optimize_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+def optimize_dtypes(df: pd.DataFrame, copy: bool = False) -> pd.DataFrame:
     """Simple data type optimization focusing on numeric columns.
-    
+
     Args:
         df: DataFrame to optimize
-        
+        copy: If True, create a copy before modifying. Default False for performance.
+
     Returns:
-        Optimized DataFrame
+        Optimized DataFrame (same object if copy=False)
     """
-    df = df.copy()
-    
+    if copy:
+        df = df.copy()
+
     # Handle numeric columns
     numeric_cols = {
         'year': np.int16,
@@ -44,68 +53,69 @@ def optimize_dtypes(df: pd.DataFrame) -> pd.DataFrame:
         'missing_days': np.float32,
         'weight': np.float32
     }
-    
+
     for col, dtype in numeric_cols.items():
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').astype(dtype)
-    
+
     return df
 
 def process_in_chunks(
     htf_df: pd.DataFrame,
     mapping_df: pd.DataFrame,
     chunk_size: int = 100,
-    start_year: int = 1970
+    start_year: int = ASSIGNMENT_SETTINGS['historical']['start_year']
 ) -> Generator[pd.DataFrame, None, None]:
     """Process HTF data in chunks to manage memory usage.
-    
+
     Notes:
         - Missing days indicate periods before station installation
         - Zero flood days are valid measurements (no flooding)
         - We keep all records from start_year onwards, as zeros are valid data
-    
+
     Args:
         htf_df: Historical HTF data
         mapping_df: Gauge-county mapping with weights
         chunk_size: Number of stations to process at once
         start_year: Start year for analysis (inclusive)
     """
-    # Filter by year
-    htf_df = htf_df[htf_df['year'] >= start_year].copy()
-    logger.info(f"Processing {len(htf_df)} records from {start_year} onwards")
-    
-    # Log data completeness
-    total_records = len(htf_df)
-    missing_records = len(htf_df[htf_df['missing_days'] == 365])
-    zero_flood_records = len(htf_df[htf_df['flood_days'] == 0])
-    logger.info(f"Data overview:")
-    logger.info(f"  - Total records: {total_records}")
-    logger.info(f"  - Records with no floods: {zero_flood_records} ({zero_flood_records/total_records*100:.1f}%)")
-    logger.info(f"  - Records before station installation: {missing_records} ({missing_records/total_records*100:.1f}%)")
-    
-    # Get unique stations
-    stations = htf_df['station_id'].unique()
-    
-    # Keep only necessary columns
+    # Keep only necessary columns FIRST (before any filtering to reduce memory)
     htf_cols = ['station_id', 'year', 'flood_days', 'missing_days']
     mapping_cols = ['station_id', 'county_fips', 'weight', 'region']
-    
-    htf_df = htf_df[htf_cols].copy()
-    mapping_df = mapping_df[mapping_cols].copy()
-    
+
+    htf_df = htf_df[htf_cols]
+    mapping_df = mapping_df[mapping_cols]
+
+    # Filter by year (use query for efficiency on large dataframes)
+    htf_df = htf_df[htf_df['year'] >= start_year]
+    logger.info(f"Processing {len(htf_df)} records from {start_year} onwards")
+
+    # Log data completeness
+    total_records = len(htf_df)
+    if total_records > 0:
+        missing_records = (htf_df['missing_days'] == 365).sum()
+        zero_flood_records = (htf_df['flood_days'] == 0).sum()
+        logger.info(f"Data overview:")
+        logger.info(f"  - Total records: {total_records}")
+        logger.info(f"  - Records with no floods: {zero_flood_records} ({zero_flood_records/total_records*100:.1f}%)")
+        logger.info(f"  - Records before station installation: {missing_records} ({missing_records/total_records*100:.1f}%)")
+
+    # Optimize dtypes ONCE before chunking (modifies in place)
+    optimize_dtypes(htf_df)
+    optimize_dtypes(mapping_df)
+
+    # Get unique stations
+    stations = htf_df['station_id'].unique()
+
     # Process stations in chunks
     for i in range(0, len(stations), chunk_size):
-        chunk_stations = stations[i:i + chunk_size]
-        
-        # Filter data for current chunk
+        chunk_stations = set(stations[i:i + chunk_size])
+
+        # Filter data for current chunk using isin (already optimized types)
         chunk_htf = htf_df[htf_df['station_id'].isin(chunk_stations)]
         chunk_mapping = mapping_df[mapping_df['station_id'].isin(chunk_stations)]
-        
-        # Ensure numeric types
-        chunk_htf = optimize_dtypes(chunk_htf)
-        chunk_mapping = optimize_dtypes(chunk_mapping)
-        
-        # Process chunk
+
+        # Process chunk - merge without additional copies
         merged_df = pd.merge(
             chunk_mapping,
             chunk_htf,
@@ -126,9 +136,25 @@ def process_in_chunks(
             'region': 'first'
         }).reset_index()
         
-        # Calculate final values
-        county_htf['flood_days'] = (county_htf['weighted_flood_days'] / county_htf['weight']).astype(np.float32)
-        county_htf['missing_days'] = (county_htf['weighted_missing_days'] / county_htf['weight']).astype(np.float32)
+        # Calculate final values with division by zero protection
+        # Counties with zero total weight (no valid station data) will get NaN
+        with np.errstate(divide='ignore', invalid='ignore'):
+            county_htf['flood_days'] = np.where(
+                county_htf['weight'] > 0,
+                (county_htf['weighted_flood_days'] / county_htf['weight']).astype(np.float32),
+                np.nan
+            )
+            county_htf['missing_days'] = np.where(
+                county_htf['weight'] > 0,
+                (county_htf['weighted_missing_days'] / county_htf['weight']).astype(np.float32),
+                np.nan
+            )
+
+        # Log warning if any counties have no valid data
+        zero_weight_count = (county_htf['weight'] == 0).sum()
+        if zero_weight_count > 0:
+            logger.warning(f"{zero_weight_count} county-year records have zero weight (no station data)")
+            county_htf = county_htf[county_htf['weight'] > 0]
         
         # Drop intermediate columns
         county_htf = county_htf.drop(columns=[
@@ -145,7 +171,7 @@ def calculate_county_htf(
     htf_df: pd.DataFrame,
     mapping_df: pd.DataFrame,
     chunk_size: int = 100,
-    start_year: int = 1970
+    start_year: int = ASSIGNMENT_SETTINGS['historical']['start_year']
 ) -> pd.DataFrame:
     """Calculate county-level HTF values using weighted station data.
     
@@ -179,8 +205,8 @@ def calculate_county_htf(
         'missing_days': 'mean'
     }).reset_index()
     
-    # Ensure final dtypes
-    county_htf = optimize_dtypes(county_htf)
+    # Ensure final dtypes (in-place for efficiency)
+    optimize_dtypes(county_htf)
     
     # Log completion statistics
     logger.info(f"Calculated HTF values for {county_htf['county_fips'].nunique()} counties")

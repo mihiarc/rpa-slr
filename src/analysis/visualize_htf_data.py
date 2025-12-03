@@ -10,9 +10,7 @@ from pathlib import Path
 import glob
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO,
-                   format='%(asctime)s - %(levelname)s - %(message)s')
+# Note: Do not call logging.basicConfig here - let the application configure logging
 logger = logging.getLogger(__name__)
 
 def load_county_data(data_dir: Path) -> pd.DataFrame:

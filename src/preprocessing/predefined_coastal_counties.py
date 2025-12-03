@@ -19,11 +19,7 @@ from src.config import (
     COASTAL_COUNTIES_FILE
 )
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Note: Do not call logging.basicConfig here - let the application configure logging
 logger = logging.getLogger(__name__)
 
 # Make sure directories exist

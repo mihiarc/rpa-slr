@@ -13,11 +13,7 @@ from glob import glob
 from . import htf_spatial_visualization as viz
 from . import htf_temporal_analysis as temporal
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+# Note: Do not call logging.basicConfig here - let the application configure logging
 logger = logging.getLogger(__name__)
 
 def analyze_flood_data(historical_dir: Path) -> dict:

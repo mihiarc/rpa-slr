@@ -15,11 +15,7 @@ import logging
 from typing import Tuple, List
 import numpy as np
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+# Note: Do not call logging.basicConfig here - let the application configure logging
 logger = logging.getLogger(__name__)
 
 def get_region_projection(region: str) -> ccrs.Projection:

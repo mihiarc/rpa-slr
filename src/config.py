@@ -1,5 +1,78 @@
 from pathlib import Path
+from typing import Dict, Any, Optional
 import yaml
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class ConfigManager:
+    """Singleton manager for cached configuration loading.
+
+    Avoids repeated YAML file reads by caching loaded configurations.
+    """
+
+    _instance: Optional['ConfigManager'] = None
+    _cache: Dict[str, Any] = {}
+
+    def __new__(cls) -> 'ConfigManager':
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._cache = {}
+        return cls._instance
+
+    def get_yaml(self, filepath: Path) -> Dict[str, Any]:
+        """Load a YAML file, using cache if available.
+
+        Args:
+            filepath: Path to the YAML file
+
+        Returns:
+            Parsed YAML content as dictionary
+        """
+        cache_key = str(filepath.resolve())
+
+        if cache_key not in self._cache:
+            logger.debug(f"Loading config from disk: {filepath}")
+            with open(filepath) as f:
+                self._cache[cache_key] = yaml.safe_load(f)
+        else:
+            logger.debug(f"Using cached config: {filepath}")
+
+        return self._cache[cache_key]
+
+    def get_region_config(self) -> Dict[str, Any]:
+        """Get region mappings configuration."""
+        from src.config import REGION_CONFIG
+        return self.get_yaml(REGION_CONFIG)
+
+    def get_noaa_settings(self) -> Dict[str, Any]:
+        """Get NOAA API settings."""
+        from src.config import NOAA_SETTINGS_FILE
+        return self.get_yaml(NOAA_SETTINGS_FILE)
+
+    def get_tide_stations(self, region: str) -> Dict[str, Any]:
+        """Get tide station configuration for a region.
+
+        Args:
+            region: Region name (e.g., 'gulf_coast')
+
+        Returns:
+            Tide station configuration for the region
+        """
+        from src.config import TIDE_STATIONS_DIR
+        filepath = TIDE_STATIONS_DIR / f"{region}_tide_stations.yaml"
+        return self.get_yaml(filepath)
+
+    def clear_cache(self):
+        """Clear the configuration cache."""
+        self._cache.clear()
+        logger.debug("Configuration cache cleared")
+
+
+# Global config manager instance
+config_manager = ConfigManager()
+
 
 # Project structure configuration
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -76,9 +149,14 @@ NOAA_HISTORICAL_DIR = NOAA_DIR / "historical"
 NOAA_PROJECTED_DIR = NOAA_DIR / "projected"
 
 # Assignment settings
+# Note: NOAA API data is available from 1920, but analysis defaults to 1970 because:
+# 1. Data quality and station coverage improved significantly post-1970
+# 2. Sea level rise trends are more detectable in recent decades
+# 3. Pre-1970 data has more gaps and inconsistencies
+# To analyze earlier data, override start_year when calling processing functions
 ASSIGNMENT_SETTINGS = {
     'historical': {
-        'start_year': 1970,
+        'start_year': 1970,  # Default for analysis (API supports 1920+)
         'end_year': 2024,
     },
     'projected': {

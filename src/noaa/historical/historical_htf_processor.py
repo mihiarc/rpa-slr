@@ -5,6 +5,20 @@ Processes historical high tide flooding data by region, handling:
 - Regional data validation
 - Quality control checks
 - Data aggregation
+
+IMPORTANT - Flood Severity Levels:
+    The NOAA API provides three severity levels of flood days:
+    - majCount: Major flood days (highest severity, significant damage)
+    - modCount: Moderate flood days (medium severity)
+    - minCount: Minor flood days (lowest severity, nuisance flooding)
+
+    This processor ONLY uses minCount (minor flood days) for analysis.
+    Major and moderate flood counts are intentionally excluded because:
+    1. Minor flooding is the most frequent and consistent metric
+    2. It provides the best signal for detecting sea level rise trends
+    3. Major/moderate events are rare and statistically noisy
+
+    The output column 'flood_days' represents MINOR flood days only.
 """
 
 import logging

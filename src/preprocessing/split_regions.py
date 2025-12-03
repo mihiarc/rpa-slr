@@ -16,7 +16,7 @@ from src.config import (
     SHORELINE_DIR
 )
 
-logging.basicConfig(level=logging.INFO)
+# Note: Do not call logging.basicConfig here - let the application configure logging
 logger = logging.getLogger(__name__)
 
 def load_region_config():

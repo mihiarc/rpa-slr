@@ -27,25 +27,24 @@ The module is a key component for:
 import geopandas as gpd
 import numpy as np
 from scipy.spatial import cKDTree
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Optional
 import logging
 from tqdm import tqdm
 import pyproj
 from pathlib import Path
-from src.config import CONFIG_DIR
-import yaml
+from src.config import CONFIG_DIR, config_manager
 from shapely.geometry import box
 
 logger = logging.getLogger(__name__)
 
+
 class NearestGaugeFinder:
     """Finds nearest gauge stations for reference points."""
-    
-    def __init__(self, 
+
+    def __init__(self,
                  region_config: Path = CONFIG_DIR / "region_mappings.yaml"):
-        # Load region definitions
-        with open(region_config) as f:
-            self.region_config = yaml.safe_load(f)
+        # Load region definitions using cached config manager
+        self.region_config = config_manager.get_yaml(region_config)
             
         # Initialize region-specific projections
         self.region_projections = {
@@ -64,34 +63,34 @@ class NearestGaugeFinder:
         self._load_tide_station_configs()
         
     def _load_tide_station_configs(self):
-        """Load tide station configurations for each region."""
+        """Load tide station configurations for each region using cached config manager."""
         self.region_stations = {}
         self.station_metadata = {}
-        
+
         for region in self.region_config['regions']:
             station_file = self.tide_stations_dir / f"{region}_tide_stations.yaml"
             if station_file.exists():
-                with open(station_file) as f:
-                    config = yaml.safe_load(f)
-                    
-                    # Store metadata
-                    self.station_metadata[region] = config.get('metadata', {})
-                    
-                    # Store station information
-                    stations = {}
-                    for station_id, info in config.get('stations', {}).items():
-                        stations[station_id] = {
-                            'id': station_id,
-                            'name': info['name'],
-                            'latitude': info['location']['lat'],
-                            'longitude': info['location']['lon'],
-                            'sub_region': info.get('region', '')
-                        }
-                    self.region_stations[region] = stations
-                    
-                    logger.info(f"Loaded {len(stations)} stations for region {region}")
-                    logger.info(f"Source: {self.station_metadata[region].get('source', 'Unknown')}")
-                    logger.info(f"Last updated: {self.station_metadata[region].get('last_updated', 'Unknown')}")
+                # Use cached config manager for YAML loading
+                config = config_manager.get_yaml(station_file)
+
+                # Store metadata
+                self.station_metadata[region] = config.get('metadata', {})
+
+                # Store station information
+                stations = {}
+                for station_id, info in config.get('stations', {}).items():
+                    stations[station_id] = {
+                        'id': station_id,
+                        'name': info['name'],
+                        'latitude': info['location']['lat'],
+                        'longitude': info['location']['lon'],
+                        'sub_region': info.get('region', '')
+                    }
+                self.region_stations[region] = stations
+
+                logger.info(f"Loaded {len(stations)} stations for region {region}")
+                logger.info(f"Source: {self.station_metadata[region].get('source', 'Unknown')}")
+                logger.info(f"Last updated: {self.station_metadata[region].get('last_updated', 'Unknown')}")
             else:
                 logger.warning(f"No tide station configuration found for region: {region}")
                 self.region_stations[region] = {}
@@ -276,49 +275,41 @@ class NearestGaugeFinder:
                     region: str) -> List[dict]:
         """
         Find nearest gauge stations for each reference point within the same region and subregion.
-        
+
         Args:
             reference_points: GeoDataFrame of reference points
             gauge_stations: GeoDataFrame of gauge stations
             region: Region identifier
-            
+
         Returns:
             List of dictionaries containing point-to-gauge mappings
         """
         # Filter by region first
         ref_points, stations = self._filter_by_region(reference_points, gauge_stations, region)
-        
+
         if ref_points.empty or stations.empty:
             return []
-            
+
         # Project coordinates
         ref_points, stations = self._project_points(ref_points, stations, region)
-        
-        # Process each subregion separately
-        all_mappings = []
-        
+
         # Get unique subregions (including empty string for stations without subregion)
         subregions = stations['sub_region'].unique()
-        
-        for subregion in subregions:
-            # Filter stations for this subregion
-            subregion_stations = stations[stations['sub_region'] == subregion].copy()
-            
-            if len(subregion_stations) == 0:
-                continue
-                
-            # Extract coordinates for KD-tree
-            ref_coords, station_coords = self._extract_coordinates(ref_points, subregion_stations)
-            
-            # Build KD-tree for efficient nearest neighbor search
+
+        # Optimization: if only one subregion (or all empty), build single KD-tree
+        use_single_tree = len(subregions) == 1 or all(sr == '' for sr in subregions)
+
+        all_mappings = []
+
+        if use_single_tree:
+            # Build single KD-tree for all stations (more efficient)
+            ref_coords, station_coords = self._extract_coordinates(ref_points, stations)
             tree = cKDTree(station_coords)
-            
-            # Find k nearest neighbors for each reference point
-            # k is min(3, number of available stations) to ensure we don't exceed available stations
-            k = min(3, len(subregion_stations))
+
+            k = min(3, len(stations))
             distances, indices = tree.query(ref_coords, k=k)
-            
-            # Convert to meters and create mapping dictionaries
+
+            # Create mapping dictionaries
             for i, (dist, idx) in enumerate(zip(distances, indices)):
                 point_mappings = {
                     'reference_point_id': ref_points.iloc[i].name,
@@ -326,14 +317,14 @@ class NearestGaugeFinder:
                     'region': region,
                     'mappings': []
                 }
-                
+
                 # Handle case where k=1 (only one station available)
                 if not isinstance(dist, np.ndarray):
                     dist = [dist]
                     idx = [idx]
-                    
+
                 for d, j in zip(dist, idx):
-                    station = subregion_stations.iloc[j]
+                    station = stations.iloc[j]
                     point_mappings['mappings'].append({
                         'station_id': station['station_id'],
                         'station_name': station['station_name'],
@@ -341,19 +332,64 @@ class NearestGaugeFinder:
                         'distance_meters': float(d),
                         'weight': 1.0  # Initial weight, will be adjusted by weight calculator
                     })
-                
+
                 all_mappings.append(point_mappings)
-        
+        else:
+            # Multiple subregions: build separate KD-tree per subregion
+            for subregion in subregions:
+                # Filter stations for this subregion
+                subregion_mask = stations['sub_region'] == subregion
+                subregion_stations = stations[subregion_mask]
+
+                if len(subregion_stations) == 0:
+                    continue
+
+                # Extract coordinates for KD-tree
+                ref_coords, station_coords = self._extract_coordinates(ref_points, subregion_stations)
+
+                # Build KD-tree for this subregion
+                tree = cKDTree(station_coords)
+
+                # Find k nearest neighbors for each reference point
+                k = min(3, len(subregion_stations))
+                distances, indices = tree.query(ref_coords, k=k)
+
+                # Convert to meters and create mapping dictionaries
+                for i, (dist, idx) in enumerate(zip(distances, indices)):
+                    point_mappings = {
+                        'reference_point_id': ref_points.iloc[i].name,
+                        'county_fips': ref_points.iloc[i]['county_fips'],
+                        'region': region,
+                        'mappings': []
+                    }
+
+                    # Handle case where k=1 (only one station available)
+                    if not isinstance(dist, np.ndarray):
+                        dist = [dist]
+                        idx = [idx]
+
+                    for d, j in zip(dist, idx):
+                        station = subregion_stations.iloc[j]
+                        point_mappings['mappings'].append({
+                            'station_id': station['station_id'],
+                            'station_name': station['station_name'],
+                            'sub_region': station['sub_region'],
+                            'distance_meters': float(d),
+                            'weight': 1.0  # Initial weight, will be adjusted by weight calculator
+                        })
+
+                    all_mappings.append(point_mappings)
+
         # Log summary statistics
         if all_mappings:
             logger.info(f"\nGenerated mappings for region {region}:")
             for subregion in subregions:
                 subregion_name = subregion if subregion else 'main'
-                subregion_mappings = [m for m in all_mappings 
+                subregion_mappings = [m for m in all_mappings
                                     if any(sm['sub_region'] == subregion for sm in m['mappings'])]
                 if subregion_mappings:
                     logger.info(f"  Subregion {subregion_name}: {len(subregion_mappings)} reference point mappings")
-                    
+
         return all_mappings
 
 def process_spatial_data(

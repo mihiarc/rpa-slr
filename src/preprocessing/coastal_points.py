@@ -15,11 +15,7 @@ import pandas as pd
 import os
 import sys
 
-# Set up logging manually
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Note: Do not call logging.basicConfig here - let the application configure logging
 logger = logging.getLogger(__name__)
 
 # Point spacing in meters (5km)

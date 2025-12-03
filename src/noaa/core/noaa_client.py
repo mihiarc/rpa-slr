@@ -28,16 +28,18 @@ class NOAAApiError(Exception):
 
 class NOAAClient:
     """Client for interacting with NOAA Tides & Currents API."""
-    
+
     def __init__(self, api_base_url: str = "https://api.tidesandcurrents.noaa.gov/dpapi/prod/webapi", requests_per_second: float = 2.0):
         """Initialize the NOAA API client.
-        
+
         Args:
             api_base_url: Base URL for the NOAA API
             requests_per_second: Maximum number of requests per second. Defaults to 2.0.
         """
         self.api_base_url = api_base_url.rstrip('/')
         self.rate_limiter = RateLimiter(requests_per_second)
+        # Use session for connection pooling and improved performance
+        self._session = requests.Session()
 
     def fetch_annual_flood_counts(
         self,
@@ -84,7 +86,7 @@ class NOAAClient:
         try:
             self.rate_limiter.wait()
             logger.debug("Rate limiter check passed, making request")
-            response = requests.get(url, params=params)
+            response = self._session.get(url, params=params)
             logger.debug(f"API response status code: {response.status_code}")
             logger.debug(f"API response headers: {dict(response.headers)}")
             logger.debug(f"API response content: {response.text}")
@@ -156,7 +158,7 @@ class NOAAClient:
         try:
             self.rate_limiter.wait()
             logger.debug("Rate limiter check passed, making request")
-            response = requests.get(url, params=params)
+            response = self._session.get(url, params=params)
             logger.debug(f"API response status code: {response.status_code}")
             logger.debug(f"API response headers: {dict(response.headers)}")
             logger.debug(f"API response content: {response.text}")
@@ -181,46 +183,3 @@ class NOAAClient:
         except (ValueError, KeyError) as e:
             logger.error(f"Failed to parse NOAA API response for station {station}: {str(e)}")
             raise NOAAApiError(f"Invalid response format: {str(e)}", response=response if 'response' in locals() else None)
-
-    def _process_water_level_data(self, data: List[Dict]) -> Dict:
-        """Process water level data to count flood events.
-        
-        Args:
-            data: List of water level measurements
-            
-        Returns:
-            Dict containing flood count statistics
-        """
-        # Count days where water level exceeds thresholds
-        minor_threshold = 0.5  # feet above MHHW
-        moderate_threshold = 0.8
-        major_threshold = 1.2
-        
-        flood_days = set()
-        moderate_flood_days = set()
-        major_flood_days = set()
-        
-        for record in data:
-            try:
-                water_level = float(record['v'])
-                date = record['t'].split()[0]  # Get just the date part
-                
-                if water_level >= major_threshold:
-                    major_flood_days.add(date)
-                    moderate_flood_days.add(date)
-                    flood_days.add(date)
-                elif water_level >= moderate_threshold:
-                    moderate_flood_days.add(date)
-                    flood_days.add(date)
-                elif water_level >= minor_threshold:
-                    flood_days.add(date)
-            except (ValueError, KeyError):
-                continue
-        
-        return {
-            'minCount': len(flood_days),
-            'modCount': len(moderate_flood_days),
-            'majCount': len(major_flood_days),
-            'nanCount': 0  # We'll need to calculate this based on expected vs actual data points
-        }
- 
